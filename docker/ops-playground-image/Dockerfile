@@ -24,9 +24,11 @@ FROM maven:3.6-jdk-8-slim AS builder
 
 # Get Click Count job and compile it
 COPY ./java/flink-playground-clickcountjob /opt/flink-playground-clickcountjob
+COPY ./java/diagnostics-message-reporter /opt/diagnostics-message-reporter
 WORKDIR /opt/flink-playground-clickcountjob
 RUN mvn clean install
-
+WORKDIR /opt/diagnostics-message-reporter
+RUN mvn clean install
 
 ###############################################################################
 # Build Operations Playground Image
@@ -34,7 +36,10 @@ RUN mvn clean install
 
 FROM apache/flink:1.12.1-scala_2.11-java8
 
-WORKDIR /opt/flink/bin
+WORKDIR /opt/flink
 
 # Copy Click Count Job
 COPY --from=builder /opt/flink-playground-clickcountjob/target/flink-playground-clickcountjob-*.jar /opt/ClickCountJob.jar
+# Copy Diagnostics Metrics Reporter
+COPY --from=builder /opt/diagnostics-message-reporter/target/DiagnosticsMessageReporter-*.jar /opt/flink/plugins/DiagnosticsMessageReporter/DiagnosticsMessageReporter.jar
+#COPY --from=builder /opt/diagnostics-message-reporter/target/DiagnosticsMessageReporter-*.jar /opt/flink/lib/DiagnosticsMessageReporter.jar

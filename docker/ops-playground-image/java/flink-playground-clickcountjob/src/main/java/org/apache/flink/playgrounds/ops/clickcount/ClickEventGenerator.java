@@ -74,7 +74,6 @@ public class ClickEventGenerator {
 					null);
 
 			producer.send(record);
-
 			Thread.sleep(DELAY);
 		}
 	}
