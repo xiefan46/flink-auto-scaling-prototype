@@ -1,4 +1,4 @@
-package org.apache.flink.metrics.model;
+package org.apache.flink.diagnostics.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

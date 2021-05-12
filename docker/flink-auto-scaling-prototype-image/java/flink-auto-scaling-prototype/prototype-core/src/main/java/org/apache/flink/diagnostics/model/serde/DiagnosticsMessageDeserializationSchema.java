@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.flink.metrics.reporter;
+package org.apache.flink.diagnostics.model.serde;
 
 import java.io.IOException;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.metrics.model.DiagnosticsMessage;
+import org.apache.flink.diagnostics.model.DiagnosticsMessage;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 
 

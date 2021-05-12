@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.flink.metrics.reporter;
+package org.apache.flink.diagnostics.model.serde;
 
 import javax.annotation.Nullable;
-import org.apache.flink.metrics.model.DiagnosticsMessage;
+import org.apache.flink.diagnostics.model.DiagnosticsMessage;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;

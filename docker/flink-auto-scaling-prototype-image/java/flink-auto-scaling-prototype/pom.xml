@@ -21,7 +21,7 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>core</module>
+    <module>prototype-core</module>
     <module>diagnostics-message-reporter</module>
     <module>flink-playground-clickcountjob</module>
   </modules>
