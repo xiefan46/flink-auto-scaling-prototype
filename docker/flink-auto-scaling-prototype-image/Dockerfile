@@ -25,18 +25,22 @@ FROM maven:3.6-jdk-8-slim AS builder
 # Get Click Count job and compile it
 COPY ./java/flink-auto-scaling-prototype /opt/flink-auto-scaling-prototype
 WORKDIR /opt/flink-auto-scaling-prototype
-RUN mvn clean install
+RUN mvn clean install -DskipTests
 
 
 ###############################################################################
 # Build Operations Playground Image
 ###############################################################################
 
-FROM apache/flink:1.12.1-scala_2.11-java8
+FROM apache/flink:1.13.1-scala_2.11-java8
 
 WORKDIR /opt/flink
+
+RUN apt-get update && apt-get install vim -y && apt-get install nmap -y
 
 # Copy Click Count Job
 COPY --from=builder /opt/flink-auto-scaling-prototype/flink-playground-clickcountjob/target/flink-playground-clickcountjob-*.jar /opt/ClickCountJob.jar
 # Copy Diagnostics Metrics Reporter
-COPY --from=builder /opt/flink-auto-scaling-prototype/diagnostics-message-reporter/target/diagnostics-message-reporter-*.jar /opt/flink/plugins/diagnostics-message-reporter/diagnostics-message-reporter.jar
+COPY --from=builder /opt/flink-auto-scaling-prototype/flink-diagnostics-message-reporter/target/flink-diagnostics-message-reporter-*.jar /opt/flink/plugins/flink-diagnostics-message-reporter/flink-diagnostics-message-reporter.jar
+# Copy Flink Auto Scaler
+COPY --from=builder /opt/flink-auto-scaling-prototype/flink-auto-scaler/target/flink-auto-scaler-*.jar /opt/FlinkAutoScaler.jar
