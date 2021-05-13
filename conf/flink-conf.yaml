@@ -41,4 +41,4 @@ metrics.reporter.diagnostics-message-reporter.interval: 1 SECONDS
 
 # Filter all the task info and operator level info since currently we only do taskmanager level auto-scaling.
 # If we want to do operator level scaling, we can change this.
-metrics:reporter:my_jmx_reporter:scope:variables:excludes: task_id;task_name;task_attempt_id;task_attempt_num;subtask_index;operator_id;operator_name;subtask_index
+metrics.reporter.diagnostics-message-reporter.scope.variables.excludes: task_id;task_name;task_attempt_id;task_attempt_num;subtask_index;operator_id;operator_name;subtask_index
