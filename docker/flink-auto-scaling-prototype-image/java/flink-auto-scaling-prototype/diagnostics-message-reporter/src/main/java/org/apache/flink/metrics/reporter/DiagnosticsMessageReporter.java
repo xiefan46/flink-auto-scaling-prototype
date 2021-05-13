@@ -21,8 +21,13 @@ package org.apache.flink.metrics.reporter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import org.apache.flink.annotation.VisibleForTesting;
+import org.apache.flink.api.common.functions.AbstractRichFunction;
+import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.MetricOptions;
 import org.apache.flink.diagnostics.model.DiagnosticsMessage;
 import org.apache.flink.diagnostics.model.MetricsHeader;
 import org.apache.flink.diagnostics.model.MetricsSnapshot;
@@ -65,8 +70,6 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
 
   private String topic;
 
-  private String keyBy;
-
   /**
    * Stores all the metrics in a hierarchy way
    * Example:
@@ -90,16 +93,15 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
     servers = config.getString(
         DiagnosticsMessageReporterOptions.SERVERS.key(), DiagnosticsMessageReporterOptions.SERVERS.defaultValue());
     topic = config.getString(DiagnosticsMessageReporterOptions.TOPIC.key(), DiagnosticsMessageReporterOptions.TOPIC.defaultValue());
-    keyBy = config.getString(DiagnosticsMessageReporterOptions.KEY_BY.key(), DiagnosticsMessageReporterOptions.KEY_BY.defaultValue());
+    metricHeader = new MetricsHeader();
     if (servers == null) {
       LOG.warn("Cannot find config {}", DiagnosticsMessageReporterOptions.SERVERS.key());
     }
-    LOG.info("Before creating properties");
+    //Configuration configuration = ExecutionEnvironment.getExecutionEnvironment().getConfiguration();
+    //configuration.setBoolean(MetricOptions.SYSTEM_RESOURCE_METRICS, true);
     Properties properties = createProperties(config);
-    LOG.info("After creating properties");
     ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
     try {
-      LOG.info("Before creating producer");
       Thread.currentThread().setContextClassLoader(null);
       kafkaProducer = new KafkaProducer<>(properties);
       LOG.info("Init DiagnosticsStreamMessageReporter successfully. ");
@@ -140,6 +142,7 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
       if (!checkGroupNames(groupNames, metricName)) {
         return;
       }
+      updateMetricHeader(group);
       Map<String, Object> childGroup = visitMetricGroupMap(groupNames);
       childGroup.put(metricName, metric);
     }
@@ -156,6 +159,20 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
       childGroup.remove(metricName);
     }
   }
+
+  private void updateMetricHeader(MetricGroup group) {
+    for(Map.Entry<String, String> entry : group.getAllVariables().entrySet()){
+      String key = entry.getKey();
+      String value = entry.getValue();
+      if (metricHeader.containsKey(key) && !metricHeader.get(key).equals(value)) {
+        LOG.error("Metric header has the same key : {} with different value. value1 : {}, value2 : {}. Ignore the later on",
+            key, metricHeader.get(key), metricHeader.get(value));
+        continue;
+      }
+      metricHeader.put(key, value);
+    }
+  }
+
 
   private boolean checkGroupNames(String[] groupNames, String metricName) {
     if (groupNames == null || groupNames.length == 0) {
@@ -189,7 +206,6 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
           return;
         }
         LOG.info("Report");
-        System.out.println("report");
         long timestamp = System.currentTimeMillis();
         DiagnosticsMessage diagnosticsMessage = createDiagnosticsMessage();
         ProducerRecord<byte[], byte[]> record = new DiagnosticsMessageSerializationSchema(topic).serialize(diagnosticsMessage, timestamp);

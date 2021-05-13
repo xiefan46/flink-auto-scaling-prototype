@@ -148,10 +148,6 @@ public class DiagnosticsMessageReporterTest {
     Assert.assertEquals(diagnosticsMessage, deserialized);
   }
 
-  @Test
-  public void test() {
-    System.out.println(ByteArraySerializer.class.getCanonicalName());
-  }
 
   private Map<String, Object> getTaskGroup(Map<String, Object> metricGroupMap) {
     Map<String, Object> taskManagerGroup = (Map<String, Object>) metricGroupMap.get("taskmanager");

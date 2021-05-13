@@ -17,10 +17,16 @@
 
 package org.apache.flink.diagnostics.model.serde;
 
+import java.io.IOException;
 import javax.annotation.Nullable;
 import org.apache.flink.diagnostics.model.DiagnosticsMessage;
+import org.apache.flink.diagnostics.model.MetricsHeader;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonGenerator;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JsonSerializer;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.SerializerProvider;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
@@ -31,7 +37,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
  */
 public class DiagnosticsMessageSerializationSchema implements KafkaSerializationSchema<DiagnosticsMessage> {
 
-	private static final ObjectMapper objectMapper = new ObjectMapper();
+	private static final ObjectMapper objectMapper = getObjectMapper();
+
 	private String topic;
 
 	public DiagnosticsMessageSerializationSchema(){
@@ -39,6 +46,15 @@ public class DiagnosticsMessageSerializationSchema implements KafkaSerialization
 
 	public DiagnosticsMessageSerializationSchema(String topic) {
 		this.topic = topic;
+	}
+
+	private static ObjectMapper getObjectMapper() {
+		ObjectMapper objectMapper = new ObjectMapper();
+		SimpleModule module = new SimpleModule("SamzaModule");
+		//module.addKeySerializer(MetricsHeader.class, new MetricsHeaderSerializer());
+		//module.addSerializer(MetricsHeader.class, new MetricsHeaderSerializer());
+		objectMapper.registerModule(module);
+		return objectMapper;
 	}
 
 	@Override
@@ -51,4 +67,16 @@ public class DiagnosticsMessageSerializationSchema implements KafkaSerialization
 			throw new IllegalArgumentException("Could not serialize record: " + message, e);
 		}
 	}
+
+	/*public static class MetricsHeaderSerializer extends JsonSerializer<MetricsHeader> {
+
+		private static final ObjectMapper objectMapper = new ObjectMapper();
+
+		@Override
+		public void serialize(MetricsHeader metricsHeader, JsonGenerator jsonGenerator, SerializerProvider provider)
+				throws IOException {
+			String str = objectMapper.writeValueAsString(metricsHeader);
+			jsonGenerator.writeFieldName(str);
+		}
+	}*/
 }
