@@ -14,10 +14,19 @@
 
   <packaging>pom</packaging>
 
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <modules>
     <module>prototype-core</module>
     <module>diagnostics-message-reporter</module>
     <module>flink-playground-clickcountjob</module>
+    <module>flink-auto-scaler</module>
   </modules>
 
   <properties>

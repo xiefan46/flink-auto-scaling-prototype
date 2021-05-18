@@ -223,7 +223,7 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
   @VisibleForTesting
   DiagnosticsMessage createDiagnosticsMessage() {
     MetricsSnapshot metricsSnapshot = MetricsSnapshot.convertToMetricsSnapshot(metricsGroup);
-    return new DiagnosticsMessage(metricHeader, metricsSnapshot);
+    return new DiagnosticsMessage(metricHeader, metricsSnapshot, System.currentTimeMillis());
   }
 
   private String[] getMetricGroupNames(MetricGroup group) {

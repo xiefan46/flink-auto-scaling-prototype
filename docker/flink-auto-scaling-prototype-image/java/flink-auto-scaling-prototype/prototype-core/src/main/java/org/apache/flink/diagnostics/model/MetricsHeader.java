@@ -16,4 +16,13 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class MetricsHeader extends HashMap<String, String> {
 
+  private static final String JOB_NAME_KEY = "<job_name>";
+
+  private static final String JOB_ID_KEY = "<job_id>";
+
+  public JobKey getJobKey() {
+    String jobName = get(JOB_NAME_KEY);
+    String jobId = get(JOB_ID_KEY);
+    return new JobKey(jobName, jobId);
+  }
 }

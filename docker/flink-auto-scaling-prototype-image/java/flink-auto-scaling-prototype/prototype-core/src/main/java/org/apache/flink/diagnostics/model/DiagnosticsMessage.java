@@ -15,14 +15,19 @@ public class DiagnosticsMessage {
   @Getter
   private final MetricsSnapshot metricsSnapshot;
 
+  @Getter
+  private long timestamp;
+
   private DiagnosticsMessage(){
     metricsHeader = null;
     metricsSnapshot = null;
+    timestamp = -1;
   }
 
-  public DiagnosticsMessage(MetricsHeader metricsHeader, MetricsSnapshot metricsSnapshot) {
+  public DiagnosticsMessage(MetricsHeader metricsHeader, MetricsSnapshot metricsSnapshot, long timestamp) {
     this.metricsHeader = metricsHeader;
     this.metricsSnapshot = metricsSnapshot;
+    this.timestamp = timestamp;
   }
 
 
