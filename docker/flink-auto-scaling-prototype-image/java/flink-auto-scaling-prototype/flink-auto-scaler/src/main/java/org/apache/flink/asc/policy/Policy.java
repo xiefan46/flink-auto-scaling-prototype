@@ -74,9 +74,7 @@ public abstract class Policy {
       Instant jobLastKnownTimestamp = Instant.ofEpochMilli(dataPipeline.getCurrentJobState(jobKey).getLastTime());
       Duration staleness = Duration.between(jobLastKnownTimestamp, Instant.now());
       LOG.info("Job: {}, staleness: {}, maxStaleness: {}", jobKey, staleness, maxStaleness);
-      boolean disablePolicyDueToStateRestore = disableSizingStateRestoringStatefulJobsWhitelist.matcher(jobKey.getJobName()).matches()
-              && dataPipeline.isJobRestoringState(jobKey);
-      return !disablePolicyDueToStateRestore && staleness.compareTo(maxStaleness) <= 0;
+      return  staleness.compareTo(maxStaleness) <= 0;
     }
     return false;
   }

@@ -8,6 +8,7 @@ import java.util.Set;
 import org.apache.flink.asc.datapipeline.dataprovider.DiagnosticsStreamDataProvider;
 import org.apache.flink.asc.model.JobKey;
 import org.apache.flink.asc.model.JobState;
+import org.apache.flink.asc.model.TimeWindow;
 import org.apache.flink.diagnostics.model.DiagnosticsMessage;
 import org.apache.flink.runtime.executiongraph.ErrorInfo;
 import org.slf4j.Logger;
@@ -39,4 +40,13 @@ public class DataPipeline {
   public Set<JobKey> getLatestAttempts() {
     return this.diagnosticsStreamDataProvider.getLatestAttempts();
   }
+
+  public JobState getCurrentJobState(JobKey job) {
+    return null;
+  }
+
+  public TimeWindow getProcessVcoreUsageMetricWindow(JobKey job) {
+    return null;
+  }
+
 }
