@@ -27,6 +27,7 @@
     <module>diagnostics-message-reporter</module>
     <module>flink-playground-clickcountjob</module>
     <module>flink-auto-scaler</module>
+    <module>auto-scaler-common</module>
   </modules>
 
   <properties>

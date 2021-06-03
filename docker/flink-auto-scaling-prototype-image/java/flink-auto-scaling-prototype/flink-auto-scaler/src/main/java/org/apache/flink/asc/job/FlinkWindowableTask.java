@@ -1,5 +1,6 @@
 package org.apache.flink.asc.job;
 
+import com.linkedin.asc.datapipeline.DataPipeline;
 import com.linkedin.asc.model.JobKey;
 import com.linkedin.asc.model.SizingAction;
 import java.util.ArrayList;
@@ -12,17 +13,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import com.linkedin.asc.action.ActionRegistry;
-import org.apache.flink.asc.datapipeline.DataPipeline;
 import com.linkedin.asc.policy.Policy;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.diagnostics.model.DiagnosticsMessage;
+import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class FlinkWindowableTask extends KeyedProcessFunction<String, DiagnosticsMessage, DiagnosticsMessage> {
+public class FlinkWindowableTask extends KeyedProcessFunction<String, FlinkDiagnosticsMessage, FlinkDiagnosticsMessage> {
 
   private static final Logger LOG = LoggerFactory.getLogger(FlinkWindowableTask.class);
 
@@ -54,8 +54,8 @@ public class FlinkWindowableTask extends KeyedProcessFunction<String, Diagnostic
   }
 
   @Override
-  public void processElement(DiagnosticsMessage diagnosticsMessage, Context context,
-      Collector<DiagnosticsMessage> collector) throws Exception {
+  public void processElement(FlinkDiagnosticsMessage diagnosticsMessage, Context context,
+      Collector<FlinkDiagnosticsMessage> collector) throws Exception {
 
   }
 

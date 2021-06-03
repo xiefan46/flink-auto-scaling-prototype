@@ -20,8 +20,8 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.diagnostics.model.DiagnosticsMessage;
-import org.apache.flink.diagnostics.model.serde.DiagnosticsMessageDeserializationSchema;
+import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
+import org.apache.flink.diagnostics.model.serde.FlinkDiagnosticsMessageDeserializationSchema;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -55,12 +55,12 @@ public class FlinkAutoScaler {
     kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
     kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "auto-scaler");
 
-    DataStream<DiagnosticsMessage> source = env.addSource(
-        new FlinkKafkaConsumer<DiagnosticsMessage>(inputTopic, new DiagnosticsMessageDeserializationSchema(),
+    DataStream<FlinkDiagnosticsMessage> source = env.addSource(
+        new FlinkKafkaConsumer<FlinkDiagnosticsMessage>(inputTopic, new FlinkDiagnosticsMessageDeserializationSchema(),
             kafkaProps)).name("Flink Metrics Source");
 
     source.assignTimestampsAndWatermarks(
-        WatermarkStrategy.<DiagnosticsMessage>forBoundedOutOfOrderness(Duration.ofMinutes(10)).withTimestampAssigner(
+        WatermarkStrategy.<FlinkDiagnosticsMessage>forBoundedOutOfOrderness(Duration.ofMinutes(10)).withTimestampAssigner(
             (diagnosticsMessage, timestamp) -> diagnosticsMessage.getTimestamp()))
         .keyBy(diagnosticsMessage -> diagnosticsMessage.getMetricsHeader().getJobName())
         .process(new FlinkWindowableTask());

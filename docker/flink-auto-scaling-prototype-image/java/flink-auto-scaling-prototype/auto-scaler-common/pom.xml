@@ -22,24 +22,13 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>org.apache.flink</groupId>
-  <artifactId>flink-auto-scaler</artifactId>
+  <groupId>com.linkedin.asc</groupId>
+  <artifactId>auto-scaler-common</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>flink-auto-scaler</name>
+  <name>auto-scaler-common</name>
 
   <dependencies>
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>prototype-core</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.linkedin.asc</groupId>
-      <artifactId>auto-scaler-common</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>

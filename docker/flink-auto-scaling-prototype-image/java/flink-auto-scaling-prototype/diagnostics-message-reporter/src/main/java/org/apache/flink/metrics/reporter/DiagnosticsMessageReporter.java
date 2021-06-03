@@ -21,17 +21,12 @@ package org.apache.flink.metrics.reporter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import org.apache.flink.annotation.VisibleForTesting;
-import org.apache.flink.api.common.functions.AbstractRichFunction;
-import org.apache.flink.api.java.ExecutionEnvironment;
-import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.MetricOptions;
-import org.apache.flink.diagnostics.model.DiagnosticsMessage;
+import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
 import org.apache.flink.diagnostics.model.MetricsHeader;
 import org.apache.flink.diagnostics.model.MetricsSnapshot;
-import org.apache.flink.diagnostics.model.serde.DiagnosticsMessageSerializationSchema;
+import org.apache.flink.diagnostics.model.serde.FlinkDiagnosticsMessageSerializationSchema;
 import org.apache.flink.metrics.CharacterFilter;
 import org.apache.flink.metrics.Metric;
 import org.apache.flink.metrics.MetricConfig;
@@ -207,8 +202,8 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
         }
         LOG.info("Report");
         long timestamp = System.currentTimeMillis();
-        DiagnosticsMessage diagnosticsMessage = createDiagnosticsMessage();
-        ProducerRecord<byte[], byte[]> record = new DiagnosticsMessageSerializationSchema(topic).serialize(diagnosticsMessage, timestamp);
+        FlinkDiagnosticsMessage diagnosticsMessage = createDiagnosticsMessage();
+        ProducerRecord<byte[], byte[]> record = new FlinkDiagnosticsMessageSerializationSchema(topic).serialize(diagnosticsMessage, timestamp);
         kafkaProducer.send(record);
       }
     } catch (Exception ignored) {
@@ -221,9 +216,9 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
    * @return
    */
   @VisibleForTesting
-  DiagnosticsMessage createDiagnosticsMessage() {
+  FlinkDiagnosticsMessage createDiagnosticsMessage() {
     MetricsSnapshot metricsSnapshot = MetricsSnapshot.convertToMetricsSnapshot(metricsGroup);
-    return new DiagnosticsMessage(metricHeader, metricsSnapshot, System.currentTimeMillis());
+    return new FlinkDiagnosticsMessage(metricHeader, metricsSnapshot, System.currentTimeMillis());
   }
 
   private String[] getMetricGroupNames(MetricGroup group) {

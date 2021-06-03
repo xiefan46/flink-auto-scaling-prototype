@@ -23,9 +23,9 @@ import java.util.Map;
 import org.apache.flink.api.common.JobID;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.MetricOptions;
-import org.apache.flink.diagnostics.model.DiagnosticsMessage;
-import org.apache.flink.diagnostics.model.serde.DiagnosticsMessageDeserializationSchema;
-import org.apache.flink.diagnostics.model.serde.DiagnosticsMessageSerializationSchema;
+import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
+import org.apache.flink.diagnostics.model.serde.FlinkDiagnosticsMessageDeserializationSchema;
+import org.apache.flink.diagnostics.model.serde.FlinkDiagnosticsMessageSerializationSchema;
 import org.apache.flink.metrics.Counter;
 import org.apache.flink.metrics.Gauge;
 import org.apache.flink.metrics.MetricConfig;
@@ -40,7 +40,6 @@ import org.apache.flink.runtime.metrics.groups.TaskMetricGroup;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.testutils.logging.TestLoggerResource;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -97,7 +96,7 @@ public class DiagnosticsMessageReporterTest {
     SimpleCounter counter = new SimpleCounter();
     Counter c = taskMetricGroup.counter(counterName, counter);
 
-    DiagnosticsMessage diagnosticsMessage = reporter.createDiagnosticsMessage();
+    FlinkDiagnosticsMessage diagnosticsMessage = reporter.createDiagnosticsMessage();
     ObjectMapper om = new ObjectMapper();
     System.out.println(om.writeValueAsString(diagnosticsMessage));
     Map<String, Object> taskGroup = getTaskGroup(diagnosticsMessage.getMetricsSnapshot());
@@ -122,7 +121,7 @@ public class DiagnosticsMessageReporterTest {
     };
     Gauge<Double> g = taskMetricGroup.gauge(gaugeName, cpuGauge);
 
-    DiagnosticsMessage diagnosticsMessage = reporter.createDiagnosticsMessage();
+    FlinkDiagnosticsMessage diagnosticsMessage = reporter.createDiagnosticsMessage();
     ObjectMapper om = new ObjectMapper();
     System.out.println(om.writeValueAsString(diagnosticsMessage));
     Map<String, Object> taskGroup = getTaskGroup(diagnosticsMessage.getMetricsSnapshot());
@@ -138,13 +137,12 @@ public class DiagnosticsMessageReporterTest {
   @Test
   public void testSerde() throws Exception {
     long timestamp = System.currentTimeMillis();
-    DiagnosticsMessage diagnosticsMessage = reporter.createDiagnosticsMessage();
-    DiagnosticsMessageSerializationSchema serializationSchema = new
-        DiagnosticsMessageSerializationSchema("t1");
+    FlinkDiagnosticsMessage diagnosticsMessage = reporter.createDiagnosticsMessage();
+    FlinkDiagnosticsMessageSerializationSchema serializationSchema = new FlinkDiagnosticsMessageSerializationSchema("t1");
     ProducerRecord<byte[], byte[]> record = serializationSchema.serialize(diagnosticsMessage, timestamp);
-    DiagnosticsMessageDeserializationSchema deserializationSchema = new
-        DiagnosticsMessageDeserializationSchema();
-    DiagnosticsMessage deserialized = deserializationSchema.deserialize(record.value());
+    FlinkDiagnosticsMessageDeserializationSchema
+        deserializationSchema = new FlinkDiagnosticsMessageDeserializationSchema();
+    FlinkDiagnosticsMessage deserialized = deserializationSchema.deserialize(record.value());
     Assert.assertEquals(diagnosticsMessage, deserialized);
   }
 
