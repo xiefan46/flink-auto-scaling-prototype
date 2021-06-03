@@ -1,14 +1,11 @@
 package org.apache.flink.asc.datapipeline.dataprovider;
 
+import com.linkedin.asc.model.JobKey;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.apache.flink.asc.model.JobKey;
-import org.apache.flink.asc.model.JobNameInstanceIDPair;
 import org.apache.flink.diagnostics.model.DiagnosticsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

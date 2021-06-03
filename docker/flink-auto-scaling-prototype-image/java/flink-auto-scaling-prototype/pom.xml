@@ -102,6 +102,14 @@
       <version>1.18.20</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/org.testng/testng -->
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>6.5.2</version>
+      <scope>test</scope>
+    </dependency>
+
 
     <!-- Logging dependencies -->
     <!-- These dependencies are excluded from the application JAR by default. -->

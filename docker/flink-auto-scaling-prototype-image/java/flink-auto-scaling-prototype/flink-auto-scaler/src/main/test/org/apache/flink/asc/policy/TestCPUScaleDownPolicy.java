@@ -1,8 +1,8 @@
 package org.apache.flink.asc.policy;
 
 
+import com.linkedin.asc.policy.Policy;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -13,7 +13,6 @@ import org.apache.flink.asc.model.SizingAction;
 import org.junit.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import static org.apache.flink.asc.util.Utils.*;
 
 
 public class TestCPUScaleDownPolicy extends TestCPUScalingPolicy {

@@ -1,6 +1,6 @@
 package org.apache.flink.asc.policy;
 
-import org.apache.flink.asc.model.SizingAction;
+import com.linkedin.asc.model.SizingAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

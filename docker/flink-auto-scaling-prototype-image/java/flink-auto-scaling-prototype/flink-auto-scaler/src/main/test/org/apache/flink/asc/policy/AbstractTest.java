@@ -11,7 +11,6 @@ import org.apache.flink.asc.model.JobKey;
 import org.apache.flink.asc.model.JobState;
 import org.apache.flink.asc.model.TimeWindow;
 import org.apache.flink.asc.model.functions.MaxFunc;
-import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
 
 

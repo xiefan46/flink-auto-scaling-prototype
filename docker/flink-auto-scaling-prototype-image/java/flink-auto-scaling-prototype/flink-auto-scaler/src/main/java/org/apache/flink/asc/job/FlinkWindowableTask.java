@@ -1,5 +1,7 @@
 package org.apache.flink.asc.job;
 
+import com.linkedin.asc.model.JobKey;
+import com.linkedin.asc.model.SizingAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -9,13 +11,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import org.apache.flink.asc.action.ActionRegistry;
+import com.linkedin.asc.action.ActionRegistry;
 import org.apache.flink.asc.datapipeline.DataPipeline;
-import org.apache.flink.asc.model.SizingAction;
-import org.apache.flink.asc.policy.Policy;
+import com.linkedin.asc.policy.Policy;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.diagnostics.model.DiagnosticsMessage;
-import org.apache.flink.asc.model.JobKey;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;

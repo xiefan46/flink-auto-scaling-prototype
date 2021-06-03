@@ -1,13 +1,7 @@
-package org.apache.flink.asc.model;
+package com.linkedin.asc.model;
 
 import java.util.Objects;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import org.apache.flink.runtime.executiongraph.ErrorInfo;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonSubTypes;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 
 public class TimestampInfo {

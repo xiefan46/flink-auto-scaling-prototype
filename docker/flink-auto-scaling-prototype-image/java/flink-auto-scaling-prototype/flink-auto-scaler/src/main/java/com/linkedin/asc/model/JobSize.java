@@ -1,4 +1,4 @@
-package org.apache.flink.asc.model;
+package com.linkedin.asc.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import lombok.AllArgsConstructor;
@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.flink.asc.util.Utils.*;
+
 
 /**
  * Encapsulate all configurable, sizing-related parameters of a job.

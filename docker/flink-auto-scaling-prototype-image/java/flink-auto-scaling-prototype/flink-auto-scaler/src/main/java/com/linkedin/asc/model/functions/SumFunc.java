@@ -1,5 +1,4 @@
-package org.apache.flink.asc.model.functions;
-
+package com.linkedin.asc.model.functions;
 
 public class SumFunc implements FoldLeftFunction<Double, Double> {
   public static final FoldLeftFunction<Double, Double> SUM_FUNC = new SumFunc();

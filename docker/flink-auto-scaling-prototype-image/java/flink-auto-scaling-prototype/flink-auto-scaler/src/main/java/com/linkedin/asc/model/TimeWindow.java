@@ -1,5 +1,7 @@
-package org.apache.flink.asc.model;
+package com.linkedin.asc.model;
 
+import com.linkedin.asc.model.functions.FoldLeftFunction;
+import com.linkedin.asc.model.functions.MaxFunc;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -13,8 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import org.apache.flink.asc.model.functions.FoldLeftFunction;
-import org.apache.flink.asc.model.functions.MaxFunc;
 import org.apache.flink.streaming.runtime.operators.windowing.TimestampedValue;
 
 
@@ -85,7 +85,8 @@ public class TimeWindow {
    * Returns a sub-window of the current TimeWindow given a start and end time of the sub-window
    */
   public TimeWindow getSubWindow(Instant windowStart, Instant windowEnd) {
-    TimeWindow subWindow = new TimeWindow(Duration.ofMillis(windowEnd.toEpochMilli() - windowStart.toEpochMilli()));
+    TimeWindow
+        subWindow = new TimeWindow(Duration.ofMillis(windowEnd.toEpochMilli() - windowStart.toEpochMilli()));
     for (Map.Entry<Instant, Double> value : metricWindow.subMap(windowStart, true, windowEnd, true).entrySet()) {
       subWindow.addMetric(value.getKey(), value.getValue(), MaxFunc.MAX_FUNC);
     }

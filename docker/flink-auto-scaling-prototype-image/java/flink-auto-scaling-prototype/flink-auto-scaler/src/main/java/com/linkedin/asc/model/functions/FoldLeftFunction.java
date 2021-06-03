@@ -1,6 +1,5 @@
-package org.apache.flink.asc.model.functions;
+package com.linkedin.asc.model.functions;
 
-import java.io.Serializable;
 import org.apache.kafka.common.annotation.InterfaceStability;
 
 

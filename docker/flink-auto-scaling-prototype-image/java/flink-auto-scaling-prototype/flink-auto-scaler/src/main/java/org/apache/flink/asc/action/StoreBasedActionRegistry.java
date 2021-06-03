@@ -1,6 +1,12 @@
 package org.apache.flink.asc.action;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.linkedin.asc.action.ActionEnforcer;
+import com.linkedin.asc.action.ActionRegistry;
+import com.linkedin.asc.model.JobKey;
+import com.linkedin.asc.model.JobNameInstanceIDPair;
+import com.linkedin.asc.model.SizingAction;
+import com.linkedin.asc.store.KeyValueIterator;
+import com.linkedin.asc.store.KeyValueStore;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -8,11 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-import org.apache.flink.asc.model.JobKey;
-import org.apache.flink.asc.model.JobNameInstanceIDPair;
-import org.apache.flink.asc.model.SizingAction;
+import lombok.AllArgsConstructor;
+import org.apache.flink.asc.datapipeline.dataprovider.ResourceManagerDataProvider;
 import org.apache.flink.asc.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +26,7 @@ import org.slf4j.LoggerFactory;
  * Maintains a work-queue of pending-actions that is drained by providing the actions
  * to the action-enforcer asynchronously.
  */
+@AllArgsConstructor
 public class StoreBasedActionRegistry implements ActionRegistry {
 
   private final static Logger LOG = LoggerFactory.getLogger(StoreBasedActionRegistry.class.getName());
@@ -45,31 +50,31 @@ public class StoreBasedActionRegistry implements ActionRegistry {
   private static final Duration APPLY_ACTION_TIMEOUT = Duration.ofSeconds(5);
   private volatile boolean shouldShutdown = false;
   private volatile Duration shutdownWaitTimeout = Duration.ofSeconds(30);
+  private final ResourceManagerDataProvider resourceManagerDataProvider;
+  private final KeyValueStore<JobNameInstanceIDPair, List<SizingAction>> pendingActionsStore;
 
   /**
    * Initialize metric values using the contents of the store.
    */
   private void initializeMetricValues() {
-    /*synchronized (pendingActionsStore) {
+    synchronized (pendingActionsStore) {
 
       // iterate on the pendingActionsStore and populate actionsToIssue
       KeyValueIterator<JobNameInstanceIDPair, List<SizingAction>> iterator = pendingActionsStore.all();
       while (iterator.hasNext()) {
-        Entry<JobNameInstanceIDPair, List<SizingAction>> actionList = iterator.next();
+        Map.Entry<JobNameInstanceIDPair, List<SizingAction>> actionList = iterator.next();
         long sizingActionsEnqueuedCount = actionList.getValue().stream().filter(action -> action.getStatus().equals(SizingAction.Status.ENQUEUED)).count();
         long sizingActionsIssuedCount = actionList.getValue().stream().filter(action -> action.getStatus().equals(SizingAction.Status.ISSUED)).count();
-        metrics.setSizingActionsEnqueued(actionList.getKey(), (int) sizingActionsEnqueuedCount);
-        metrics.setSizingActionsIssued(actionList.getKey(), (int) sizingActionsIssuedCount);
         LOG.info("Initializing metric job: {}, sizingActionsIssuedCount: {}", actionList.getKey(), sizingActionsIssuedCount);
         LOG.info("Initializing metric job: {}, sizingActionsEnqueuedCount: {}", actionList.getKey(), sizingActionsEnqueuedCount);
       }
       iterator.close();
-    }*/
+    }
   }
 
   @Override
   public boolean hasAction(JobKey jobKey) {
-    /*boolean hasAction = false;
+    boolean hasAction = false;
     JobNameInstanceIDPair job = new JobNameInstanceIDPair(jobKey.getJobName(), jobKey.getInstanceID());
 
     // serialize all accesses of pendingActionsStore
@@ -86,13 +91,12 @@ public class StoreBasedActionRegistry implements ActionRegistry {
       }
     }
 
-    return hasAction;*/
-    return true;
+    return hasAction;
   }
 
   @Override
   public void registerAction(SizingAction action) {
-    /*LOG.info("Registering sizing action: {}", action);
+    LOG.info("Registering sizing action: {}", action);
     JobNameInstanceIDPair job =
         new JobNameInstanceIDPair(action.getJobKey().getJobName(), action.getJobKey().getInstanceID());
 
@@ -108,7 +112,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
       this.pendingActionsStore.put(job, jobActionList);
 
       pendingActionsStore.notify();
-    }*/
+    }
   }
 
   /**
@@ -140,7 +144,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
       while (!shouldShutdown) {
 
         // serialize all accesses of pendingActionsStore
-        /*synchronized (pendingActionsStore) {
+        synchronized (pendingActionsStore) {
 
           // wait till timeout expires or there is a notification
           try {
@@ -152,7 +156,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
           // iterate on the pendingActionsStore and populate actionsToIssue
           KeyValueIterator<JobNameInstanceIDPair, List<SizingAction>> iterator = pendingActionsStore.all();
           while (iterator.hasNext()) {
-            Entry<JobNameInstanceIDPair, List<SizingAction>> actionList = iterator.next();
+            Map.Entry<JobNameInstanceIDPair, List<SizingAction>> actionList = iterator.next();
             Optional<SizingAction> action = getActionToIssue(actionList.getValue());
 
             if (action.isPresent()) {
@@ -192,12 +196,6 @@ public class StoreBasedActionRegistry implements ActionRegistry {
               // persist the update
               pendingActionsStore.put(job, actionEntry.getValue());
 
-              // update metrics
-              metrics.decrementSizingActionsEnqueued(job);
-              metrics.incrementSizingActionsIssued(job);
-
-              // update analytics
-              analytics.ifPresent(analytics -> analytics.recordSizingAction(action));
             }
           } catch (Exception e) {
             LOG.info("Exception while applying action", e);
@@ -212,7 +210,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
     // Helper method that returns the first action from the list that has ENQUEUED status
     // TODO: make this method smarter by performing the last-action on a job if there are multiple actions
     // in enqueued actions for one jobName-instanceID
-    /*private Optional<SizingAction> getActionToIssue(List<SizingAction> actionList) {
+    private Optional<SizingAction> getActionToIssue(List<SizingAction> actionList) {
       for (SizingAction action : actionList) {
         if (action.getStatus().equals(SizingAction.Status.ENQUEUED)) {
           return Optional.of(action);
@@ -221,7 +219,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
 
       return Optional.empty();
     }
-  }*/
+  }
       }
     }
   }

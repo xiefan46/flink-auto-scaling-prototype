@@ -1,10 +1,9 @@
-package org.apache.flink.asc.model;
+package com.linkedin.asc.model;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-
 
 
 /**

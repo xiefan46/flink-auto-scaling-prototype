@@ -1,18 +1,18 @@
 package org.apache.flink.asc.policy;
 
 
+import com.linkedin.asc.model.JobKey;
+import com.linkedin.asc.model.JobSize;
+import com.linkedin.asc.model.JobState;
+import com.linkedin.asc.model.SizingAction;
+import com.linkedin.asc.model.TimeWindow;
+import com.linkedin.asc.policy.Policy;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import org.apache.flink.asc.datapipeline.DataPipeline;
-import org.apache.flink.asc.model.JobKey;
-import org.apache.flink.asc.model.JobSize;
-import org.apache.flink.asc.model.JobState;
-import org.apache.flink.asc.model.SizingAction;
-import org.apache.flink.asc.model.TimeWindow;
 import org.apache.flink.asc.policy.resizer.Resizer;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.apache.flink.asc.util.Utils.*;
 

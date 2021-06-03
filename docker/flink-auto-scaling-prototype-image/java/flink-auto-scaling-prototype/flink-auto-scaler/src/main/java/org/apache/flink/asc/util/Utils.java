@@ -1,5 +1,8 @@
 package org.apache.flink.asc.util;
 
+import com.linkedin.asc.model.JobKey;
+import com.linkedin.asc.model.JobState;
+import com.linkedin.asc.model.TimeWindow;
 import java.io.IOException;
 import java.io.Reader;
 import java.time.Duration;
@@ -9,9 +12,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.apache.flink.asc.model.JobKey;
-import org.apache.flink.asc.model.JobState;
-import org.apache.flink.asc.model.TimeWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

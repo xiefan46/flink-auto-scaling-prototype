@@ -1,10 +1,11 @@
-package org.apache.flink.asc.model.functions;
+package com.linkedin.asc.model.functions;
 
+import com.linkedin.asc.model.TimeWindow;
 import lombok.EqualsAndHashCode;
 
 
 /**
- * This class is used by {@link org.apache.flink.asc.model.TimeWindow} to aggregate metrics
+ * This class is used by {@link TimeWindow} to aggregate metrics
  * from different containers into a single value in a specific timestamp.
  */
 @EqualsAndHashCode

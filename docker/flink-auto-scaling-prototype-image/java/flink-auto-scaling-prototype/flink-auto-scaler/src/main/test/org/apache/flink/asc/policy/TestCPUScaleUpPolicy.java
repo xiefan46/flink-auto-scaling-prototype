@@ -1,6 +1,7 @@
 package org.apache.flink.asc.policy;
 
 
+import com.linkedin.asc.policy.Policy;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;

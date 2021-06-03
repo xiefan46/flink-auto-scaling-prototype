@@ -1,9 +1,9 @@
 package org.apache.flink.asc.policy.resizer;
 
+import com.linkedin.asc.model.JobKey;
+import com.linkedin.asc.model.JobSize;
+import com.linkedin.asc.model.JobState;
 import java.util.Optional;
-import org.apache.flink.asc.model.JobKey;
-import org.apache.flink.asc.model.JobSize;
-import org.apache.flink.asc.model.JobState;
 
 
 /**

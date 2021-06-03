@@ -1,7 +1,7 @@
-package org.apache.flink.asc.action;
+package com.linkedin.asc.action;
 
-import org.apache.flink.asc.model.JobKey;
-import org.apache.flink.asc.model.SizingAction;
+import com.linkedin.asc.model.JobKey;
+import com.linkedin.asc.model.SizingAction;
 
 
 /**

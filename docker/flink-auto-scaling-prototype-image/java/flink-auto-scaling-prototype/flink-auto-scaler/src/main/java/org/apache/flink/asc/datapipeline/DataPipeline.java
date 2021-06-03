@@ -1,16 +1,13 @@
 package org.apache.flink.asc.datapipeline;
 
 
-import java.time.Duration;
-import java.util.LinkedList;
-import java.util.List;
+
+import com.linkedin.asc.model.JobKey;
+import com.linkedin.asc.model.JobState;
+import com.linkedin.asc.model.TimeWindow;
 import java.util.Set;
 import org.apache.flink.asc.datapipeline.dataprovider.DiagnosticsStreamDataProvider;
-import org.apache.flink.asc.model.JobKey;
-import org.apache.flink.asc.model.JobState;
-import org.apache.flink.asc.model.TimeWindow;
 import org.apache.flink.diagnostics.model.DiagnosticsMessage;
-import org.apache.flink.runtime.executiongraph.ErrorInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

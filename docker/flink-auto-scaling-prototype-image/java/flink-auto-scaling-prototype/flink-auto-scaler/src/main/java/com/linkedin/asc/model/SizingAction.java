@@ -1,4 +1,4 @@
-package org.apache.flink.asc.model;
+package com.linkedin.asc.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
