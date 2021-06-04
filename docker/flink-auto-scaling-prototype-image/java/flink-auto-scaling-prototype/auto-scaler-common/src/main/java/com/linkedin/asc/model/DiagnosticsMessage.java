@@ -18,5 +18,8 @@ public class DiagnosticsMessage {
   private final MetricsSnapshot metricsSnapshot;
 
   @Getter
+  private final boolean isAutoScalingEnabled;
+
+  @Getter
   private long timestamp;
 }

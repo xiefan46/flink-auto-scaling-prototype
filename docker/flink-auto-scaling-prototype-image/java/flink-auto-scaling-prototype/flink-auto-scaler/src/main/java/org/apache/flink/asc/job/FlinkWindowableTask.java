@@ -56,7 +56,7 @@ public class FlinkWindowableTask extends KeyedProcessFunction<String, FlinkDiagn
   @Override
   public void processElement(FlinkDiagnosticsMessage diagnosticsMessage, Context context,
       Collector<FlinkDiagnosticsMessage> collector) throws Exception {
-
+    this.dataPipeline.processReceivedData(diagnosticsMessage);
   }
 
   private void applyPolicies() {
@@ -66,8 +66,7 @@ public class FlinkWindowableTask extends KeyedProcessFunction<String, FlinkDiagn
     for (JobKey job : this.dataPipeline.getLatestAttempts()) {
 
       // check if job-name matches blacklist, if so, skip all policies on it
-      if (blacklistForAllPolicies.matcher(job.getJobName()).matches() || blacklistForAllPolicies.matcher(
-          job.getJobName() + '-' + job.getInstanceID()).matches()) {
+      if (blacklistForAllPolicies.matcher(job.getJobId()).matches()) {
         LOG.info("Skipping all policies over job: {}, because matches blacklist: {}", job, blacklistForAllPolicies);
         continue;
       }

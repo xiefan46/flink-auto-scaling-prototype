@@ -1,9 +1,15 @@
 package com.linkedin.asc.model;
 
 import java.util.Objects;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class TimestampInfo {
 
   /**

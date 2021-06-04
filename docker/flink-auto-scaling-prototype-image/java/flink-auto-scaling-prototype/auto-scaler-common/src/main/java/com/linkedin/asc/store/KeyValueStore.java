@@ -6,7 +6,7 @@ import java.util.Map;
 
 
 /**
- * A key-value state that supports put, get, delete
+ * A key-value store interface that supports put, get, delete
  *
  * @param <K> the type of keys maintained by this key-value store.
  * @param <V> the type of values maintained by this key-value store.
