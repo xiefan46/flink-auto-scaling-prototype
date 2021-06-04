@@ -24,7 +24,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
-import org.apache.flink.diagnostics.model.MetricsHeader;
+import org.apache.flink.diagnostics.model.FlinkMetricsHeader;
 import org.apache.flink.diagnostics.model.MetricsSnapshot;
 import org.apache.flink.diagnostics.model.serde.FlinkDiagnosticsMessageSerializationSchema;
 import org.apache.flink.metrics.CharacterFilter;
@@ -81,14 +81,14 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
   /**
    * Header information about the metrics emitted by this reporter
    */
-  private MetricsHeader metricHeader;
+  private FlinkMetricsHeader metricHeader;
 
   @Override
   public void open(MetricConfig config) {
     servers = config.getString(
         DiagnosticsMessageReporterOptions.SERVERS.key(), DiagnosticsMessageReporterOptions.SERVERS.defaultValue());
     topic = config.getString(DiagnosticsMessageReporterOptions.TOPIC.key(), DiagnosticsMessageReporterOptions.TOPIC.defaultValue());
-    metricHeader = new MetricsHeader();
+    metricHeader = new FlinkMetricsHeader();
     if (servers == null) {
       LOG.warn("Cannot find config {}", DiagnosticsMessageReporterOptions.SERVERS.key());
     }

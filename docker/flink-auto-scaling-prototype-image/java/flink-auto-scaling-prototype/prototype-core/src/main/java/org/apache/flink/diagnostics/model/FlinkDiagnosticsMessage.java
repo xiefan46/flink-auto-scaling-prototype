@@ -1,5 +1,8 @@
 package org.apache.flink.diagnostics.model;
 
+import com.linkedin.asc.model.DiagnosticsMessage;
+import com.linkedin.asc.model.MetricHeader;
+import com.linkedin.asc.model.MetricsSnapshot;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -7,31 +10,15 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-public class FlinkDiagnosticsMessage {
+public class FlinkDiagnosticsMessage extends DiagnosticsMessage {
 
-  @Getter
-  private final MetricsHeader metricsHeader;
-
-  @Getter
-  private final MetricsSnapshot metricsSnapshot;
-
-  @Getter
-  private long timestamp;
 
   private FlinkDiagnosticsMessage(){
-    metricsHeader = null;
-    metricsSnapshot = null;
-    timestamp = -1;
+    super(null, null, -1);
   }
 
-  public FlinkDiagnosticsMessage(MetricsHeader metricsHeader, MetricsSnapshot metricsSnapshot, long timestamp) {
-    this.metricsHeader = metricsHeader;
-    this.metricsSnapshot = metricsSnapshot;
-    this.timestamp = timestamp;
+  public FlinkDiagnosticsMessage(FlinkMetricsHeader metricsHeader, MetricsSnapshot metricsSnapshot, long timestamp) {
+    super(metricsHeader, metricsSnapshot, timestamp);
   }
-
-
-
-
 
 }

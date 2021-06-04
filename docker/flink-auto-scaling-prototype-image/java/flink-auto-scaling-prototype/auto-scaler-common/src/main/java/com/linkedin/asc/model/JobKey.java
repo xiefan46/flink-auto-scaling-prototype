@@ -6,19 +6,24 @@ import lombok.Getter;
 import lombok.ToString;
 
 
+/**
+ * {@link JobKey} represents a unique deployment of a job
+ */
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
 public class JobKey {
-  @Getter
-  private final String jobName;
 
+  /**
+   * The unique identifier of a job
+   */
   @Getter
   private final String jobId;
 
-  //TODO
-  public String getInstanceID() {
-    return null;
+  /**
+   * The unique identifier of one deployment of a job
+   */
+  @Getter
+  private final String attemptId;
 
-  }
 }

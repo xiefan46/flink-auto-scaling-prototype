@@ -1,4 +1,4 @@
-package org.apache.flink.diagnostics.model;
+package com.linkedin.asc.model;
 
 import java.util.HashMap;
 import java.util.Map;
