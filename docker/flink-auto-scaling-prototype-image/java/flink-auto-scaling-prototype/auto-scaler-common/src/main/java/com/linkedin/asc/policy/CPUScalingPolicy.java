@@ -7,10 +7,10 @@ import com.linkedin.asc.model.JobSize;
 import com.linkedin.asc.model.JobState;
 import com.linkedin.asc.model.SizingAction;
 import com.linkedin.asc.model.TimeWindow;
+import com.linkedin.asc.policy.resizer.Resizer;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import com.linkedin.asc.policy.resizer.Resizer;
 import org.slf4j.Logger;
 
 import static com.linkedin.asc.util.Utils.*;
@@ -27,7 +27,7 @@ public abstract class CPUScalingPolicy extends Policy {
   protected  Logger logger;
 
   // Resizer to compute sizing-parameters when increasing/decreasing memory (heap or non-heap)
-  private  Resizer resizer;
+  private Resizer resizer;
 
   private  String policyName;
 

@@ -14,11 +14,11 @@ public class FlinkDiagnosticsMessage extends DiagnosticsMessage {
 
 
   private FlinkDiagnosticsMessage(){
-    super(null, null, -1);
+    super(null, null, false, -1);
   }
 
-  public FlinkDiagnosticsMessage(FlinkMetricsHeader metricsHeader, MetricsSnapshot metricsSnapshot, long timestamp) {
-    super(metricsHeader, metricsSnapshot, timestamp);
+  public FlinkDiagnosticsMessage(FlinkMetricsHeader metricsHeader, MetricsSnapshot metricsSnapshot, boolean isAutoSizingEnabled, long timestamp) {
+    super(metricsHeader, metricsSnapshot, isAutoSizingEnabled, timestamp);
   }
 
 }

@@ -2,7 +2,6 @@ package com.linkedin.asc.action;
 
 import com.linkedin.asc.datapipeline.dataprovider.ResourceManagerDataProvider;
 import com.linkedin.asc.model.JobKey;
-import com.linkedin.asc.model.JobNameInstanceIDPair;
 import com.linkedin.asc.model.SizingAction;
 import com.linkedin.asc.store.KeyValueIterator;
 import com.linkedin.asc.store.KeyValueStore;
@@ -49,7 +48,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
   private volatile boolean shouldShutdown = false;
   private volatile Duration shutdownWaitTimeout = Duration.ofSeconds(30);
   private final ResourceManagerDataProvider resourceManagerDataProvider;
-  private final KeyValueStore<JobNameInstanceIDPair, List<SizingAction>> pendingActionsStore;
+  private final KeyValueStore<String, List<SizingAction>> pendingActionsStore;
 
   /**
    * Initialize metric values using the contents of the store.
@@ -58,9 +57,9 @@ public class StoreBasedActionRegistry implements ActionRegistry {
     synchronized (pendingActionsStore) {
 
       // iterate on the pendingActionsStore and populate actionsToIssue
-      KeyValueIterator<JobNameInstanceIDPair, List<SizingAction>> iterator = pendingActionsStore.all();
+      KeyValueIterator<String, List<SizingAction>> iterator = pendingActionsStore.all();
       while (iterator.hasNext()) {
-        Map.Entry<JobNameInstanceIDPair, List<SizingAction>> actionList = iterator.next();
+        Map.Entry<String, List<SizingAction>> actionList = iterator.next();
         long sizingActionsEnqueuedCount = actionList.getValue()
             .stream()
             .filter(action -> action.getStatus().equals(SizingAction.Status.ENQUEUED))
@@ -81,12 +80,12 @@ public class StoreBasedActionRegistry implements ActionRegistry {
   @Override
   public boolean hasAction(JobKey jobKey) {
     boolean hasAction = false;
-    JobNameInstanceIDPair job = new JobNameInstanceIDPair(jobKey.getJobName(), jobKey.getInstanceID());
+    String jobId = jobKey.getJobId();
 
     // serialize all accesses of pendingActionsStore
     synchronized (pendingActionsStore) {
 
-      List<SizingAction> actionList = this.pendingActionsStore.get(job);
+      List<SizingAction> actionList = this.pendingActionsStore.get(jobId);
       if (actionList != null) {
 
         // iterate over the list of actions for this job, to find one that was for this jobKey
@@ -103,19 +102,18 @@ public class StoreBasedActionRegistry implements ActionRegistry {
   @Override
   public void registerAction(SizingAction action) {
     LOG.info("Registering sizing action: {}", action);
-    JobNameInstanceIDPair job =
-        new JobNameInstanceIDPair(action.getJobKey().getJobName(), action.getJobKey().getInstanceID());
+    String jobId = action.getJobKey().getJobId();
 
     // serialize all accesses of pendingActionsStore
     synchronized (pendingActionsStore) {
-      List<SizingAction> jobActionList = pendingActionsStore.get(job);
+      List<SizingAction> jobActionList = pendingActionsStore.get(jobId);
       if (jobActionList == null) {
         // we use a linkedList so removeHead are O(1)
         jobActionList = new LinkedList<>();
       }
       jobActionList.add(action);
       trimActionList(jobActionList);
-      this.pendingActionsStore.put(job, jobActionList);
+      this.pendingActionsStore.put(jobId, jobActionList);
 
       pendingActionsStore.notify();
     }
@@ -160,9 +158,9 @@ public class StoreBasedActionRegistry implements ActionRegistry {
           }
 
           // iterate on the pendingActionsStore and populate actionsToIssue
-          KeyValueIterator<JobNameInstanceIDPair, List<SizingAction>> iterator = pendingActionsStore.all();
+          KeyValueIterator<String, List<SizingAction>> iterator = pendingActionsStore.all();
           while (iterator.hasNext()) {
-            Map.Entry<JobNameInstanceIDPair, List<SizingAction>> actionList = iterator.next();
+            Map.Entry<String, List<SizingAction>> actionList = iterator.next();
             Optional<SizingAction> action = getActionToIssue(actionList.getValue());
 
             if (action.isPresent()) {
@@ -196,8 +194,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
               // update the status
               action.setStatus(SizingAction.Status.ISSUED);
 
-              JobNameInstanceIDPair job =
-                  new JobNameInstanceIDPair(action.getJobKey().getJobName(), action.getJobKey().getInstanceID());
+              String job = action.getJobKey().getJobId();
 
               // persist the update
               pendingActionsStore.put(job, actionEntry.getValue());

@@ -17,11 +17,19 @@
 
 package org.apache.flink.diagnostics.model.serde;
 
+import com.linkedin.asc.model.DiagnosticsMessage;
+import com.linkedin.asc.model.MetricHeader;
 import java.io.IOException;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
+import org.apache.flink.diagnostics.model.FlinkMetricsHeader;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonParser;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.DeserializationContext;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JsonDeserializer;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.module.SimpleModule;
 
 
 /**
@@ -32,7 +40,15 @@ public class FlinkDiagnosticsMessageDeserializationSchema implements Deserializa
 
 	private static final long serialVersionUID = 1L;
 
-	private static final ObjectMapper objectMapper = new ObjectMapper();
+	private static final ObjectMapper objectMapper = getObjectMapper();
+
+	private static ObjectMapper getObjectMapper() {
+		ObjectMapper objectMapper = new ObjectMapper();
+		SimpleModule module = new SimpleModule("SamzaModule");
+		module.addDeserializer(MetricHeader.class, new MetricHeaderDeserializer());
+		objectMapper.registerModule(module);
+		return objectMapper;
+	}
 
 	@Override
 	public FlinkDiagnosticsMessage deserialize(byte[] message) throws IOException {
@@ -48,4 +64,15 @@ public class FlinkDiagnosticsMessageDeserializationSchema implements Deserializa
 	public TypeInformation<FlinkDiagnosticsMessage> getProducedType() {
 		return TypeInformation.of(FlinkDiagnosticsMessage.class);
 	}
+
+
+	static class MetricHeaderDeserializer extends JsonDeserializer<MetricHeader> {
+
+		@Override
+		public MetricHeader deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
+				throws IOException, JsonProcessingException {
+			return jsonParser.readValueAs(FlinkMetricsHeader.class);
+		}
+	}
+
 }

@@ -70,7 +70,7 @@ public abstract class Policy {
    * Check if the job's name matches the job-name whitelist, and the job's last known timestamp is within bound.
    */
   private boolean shouldApplyPolicy(JobKey jobKey, DataPipeline dataPipeline) {
-    if (jobNameWhitelist.matcher(jobKey.getJobName()).matches()) {
+    if (jobNameWhitelist.matcher(jobKey.getJobId()).matches()) {
       Instant jobLastKnownTimestamp = Instant.ofEpochMilli(dataPipeline.getCurrentJobState(jobKey).getLastTime());
       Duration staleness = Duration.between(jobLastKnownTimestamp, Instant.now());
       LOG.info("Job: {}, staleness: {}, maxStaleness: {}", jobKey, staleness, maxStaleness);

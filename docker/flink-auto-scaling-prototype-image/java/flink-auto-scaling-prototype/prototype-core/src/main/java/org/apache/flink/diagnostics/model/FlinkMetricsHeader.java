@@ -1,6 +1,5 @@
 package org.apache.flink.diagnostics.model;
 
-import com.linkedin.asc.model.JobKey;
 import com.linkedin.asc.model.MetricHeader;
 import java.util.HashMap;
 import lombok.EqualsAndHashCode;
@@ -23,7 +22,7 @@ public class FlinkMetricsHeader extends HashMap<String, String> implements Metri
   private static final String TM_ID_KEY = "<tm_id>";
 
   //We assume that job name is the unique identifier of a Flink job
-  public String getJobName() {
+  public String getJobId() {
     return get(JOB_NAME_KEY);
   }
 
@@ -38,4 +37,9 @@ public class FlinkMetricsHeader extends HashMap<String, String> implements Metri
   public String getContainerName() {
     return get(TM_ID_KEY);
   }
+
+  public FlinkMetricsHeader(){
+    super();
+  }
+
 }

@@ -1,6 +1,5 @@
 package org.apache.flink.asc.datapipeline.dataprovider;
 
-
 import com.linkedin.asc.config.Config;
 import com.linkedin.asc.datapipeline.DataPipeline;
 import com.linkedin.asc.datapipeline.dataprovider.DiagnosticsStreamDataProvider;
@@ -25,10 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.flink.api.common.JobID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

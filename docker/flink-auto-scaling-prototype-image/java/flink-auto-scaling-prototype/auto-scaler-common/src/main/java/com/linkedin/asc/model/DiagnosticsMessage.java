@@ -12,14 +12,14 @@ import lombok.ToString;
 public class DiagnosticsMessage {
 
   @Getter
-  private final MetricHeader metricHeader;
+  protected final MetricHeader metricHeader;
 
   @Getter
-  private final MetricsSnapshot metricsSnapshot;
+  protected final MetricsSnapshot metricsSnapshot;
 
   @Getter
-  private final boolean isAutoScalingEnabled;
+  protected final boolean autoScalingEnabled;
 
   @Getter
-  private long timestamp;
+  protected final long timestamp;
 }

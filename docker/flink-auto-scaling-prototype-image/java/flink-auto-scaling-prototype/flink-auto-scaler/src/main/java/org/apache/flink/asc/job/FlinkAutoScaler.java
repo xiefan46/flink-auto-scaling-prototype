@@ -62,7 +62,7 @@ public class FlinkAutoScaler {
     source.assignTimestampsAndWatermarks(
         WatermarkStrategy.<FlinkDiagnosticsMessage>forBoundedOutOfOrderness(Duration.ofMinutes(10)).withTimestampAssigner(
             (diagnosticsMessage, timestamp) -> diagnosticsMessage.getTimestamp()))
-        .keyBy(diagnosticsMessage -> diagnosticsMessage.getMetricsHeader().getJobName())
+        .keyBy(diagnosticsMessage -> diagnosticsMessage.getMetricHeader().getJobId())
         .process(new FlinkWindowableTask());
 
     env.execute("Auto Scaler");
