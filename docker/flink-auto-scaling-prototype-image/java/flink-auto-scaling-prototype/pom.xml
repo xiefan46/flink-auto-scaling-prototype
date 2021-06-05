@@ -23,8 +23,8 @@
   </licenses>
 
   <modules>
-    <module>prototype-core</module>
-    <module>diagnostics-message-reporter</module>
+    <module>flink-diagnostics-message</module>
+    <module>flink-diagnostics-message-reporter</module>
     <module>flink-playground-clickcountjob</module>
     <module>flink-auto-scaler</module>
     <module>auto-scaler-common</module>

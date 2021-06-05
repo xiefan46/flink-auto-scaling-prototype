@@ -8,12 +8,12 @@
   </parent>
 
   <groupId>org.apache.flink</groupId>
-  <artifactId>prototype-core</artifactId>
+  <artifactId>flink-diagnostics-message</artifactId>
   <version>1.0-SNAPSHOT</version>
 
 
 
-  <name>prototype-core</name>
+  <name>flink-diagnostics-message</name>
   <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 

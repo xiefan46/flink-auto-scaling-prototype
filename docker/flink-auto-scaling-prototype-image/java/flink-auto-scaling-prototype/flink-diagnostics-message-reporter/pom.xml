@@ -27,10 +27,10 @@ under the License.
 	</parent>
 
 	<groupId>org.apache.flink</groupId>
-	<artifactId>diagnostics-message-reporter</artifactId>
+	<artifactId>flink-diagnostics-message-reporter</artifactId>
 	<version>1.0-SNAPSHOT</version>
 
-	<name>diagnostics-message-reporter</name>
+	<name>flink-diagnostics-message-reporter</name>
 
 	<packaging>jar</packaging>
 
@@ -41,7 +41,7 @@ under the License.
 
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>prototype-core</artifactId>
+			<artifactId>flink-diagnostics-message</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 
