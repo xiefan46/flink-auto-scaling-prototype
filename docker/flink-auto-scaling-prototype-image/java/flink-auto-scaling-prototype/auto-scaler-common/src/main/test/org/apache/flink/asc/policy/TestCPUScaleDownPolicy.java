@@ -1,18 +1,17 @@
 package org.apache.flink.asc.policy;
 
 
+import com.linkedin.asc.datapipeline.DataPipeline;
+import com.linkedin.asc.model.SizingAction;
 import com.linkedin.asc.policy.Policy;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import org.apache.flink.asc.datapipeline.DataPipeline;
-import org.apache.flink.asc.model.JobState;
-import org.apache.flink.asc.model.SizingAction;
 import org.junit.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 
 public class TestCPUScaleDownPolicy extends TestCPUScalingPolicy {
@@ -26,11 +25,11 @@ public class TestCPUScaleDownPolicy extends TestCPUScalingPolicy {
   @Override
   protected Map<String, String> configOverride() {
     Map<String, String> configMap = new HashMap<>();
-    configMap.put("samzaasc.policy.cpuscaledown.window.ms", MOCK_SCALE_UP_WINDOW_SIZE_MINUTES * MINUTE + "");
+    configMap.put("asc.policy.cpuscaledown.window.ms", MOCK_SCALE_UP_WINDOW_SIZE_MINUTES * MINUTE + "");
     return configMap;
   }
 
-  @BeforeClass
+  @Before
   public void init() {
     policy.initialize(WHITELIST, Duration.ofMinutes(2), Pattern.compile(".*"));
   }

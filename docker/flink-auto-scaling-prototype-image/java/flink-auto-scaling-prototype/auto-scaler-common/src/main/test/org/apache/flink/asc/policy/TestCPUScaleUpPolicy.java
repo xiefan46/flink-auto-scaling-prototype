@@ -1,16 +1,16 @@
 package org.apache.flink.asc.policy;
 
 
+import com.linkedin.asc.datapipeline.DataPipeline;
+import com.linkedin.asc.model.SizingAction;
 import com.linkedin.asc.policy.Policy;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import org.apache.flink.asc.datapipeline.DataPipeline;
-import org.apache.flink.asc.model.SizingAction;
 import org.junit.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 
 public class TestCPUScaleUpPolicy extends TestCPUScalingPolicy {
@@ -27,7 +27,7 @@ public class TestCPUScaleUpPolicy extends TestCPUScalingPolicy {
     return configMap;
   }
 
-  @BeforeClass
+  @Before
   public void init() {
 
     policy.initialize(WHITELIST, Duration.ofMinutes(2));

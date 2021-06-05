@@ -1,11 +1,11 @@
 package org.apache.flink.asc.policy;
 
+import com.linkedin.asc.datapipeline.DataPipeline;
+import com.linkedin.asc.model.JobState;
+import com.linkedin.asc.model.TimeWindow;
+import com.linkedin.asc.model.functions.MaxFunc;
 import java.time.Duration;
 import java.time.Instant;
-import org.apache.flink.asc.datapipeline.DataPipeline;
-import org.apache.flink.asc.model.JobState;
-import org.apache.flink.asc.model.TimeWindow;
-import org.apache.flink.asc.model.functions.MaxFunc;
 import org.mockito.Mockito;
 
 
