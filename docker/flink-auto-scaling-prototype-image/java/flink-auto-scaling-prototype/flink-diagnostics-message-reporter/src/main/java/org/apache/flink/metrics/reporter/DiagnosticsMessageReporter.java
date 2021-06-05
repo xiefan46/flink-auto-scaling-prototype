@@ -18,7 +18,7 @@
 
 package org.apache.flink.metrics.reporter;
 
-import com.linkedin.asc.model.MetricsSnapshot;
+import org.apache.flink.model.MetricsSnapshot;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
 import org.apache.flink.diagnostics.model.FlinkMetricsHeader;
+import org.apache.flink.diagnostics.model.FlinkMetricsSnapshot;
 import org.apache.flink.diagnostics.model.serde.FlinkDiagnosticsMessageSerializationSchema;
 import org.apache.flink.metrics.CharacterFilter;
 import org.apache.flink.metrics.Metric;
@@ -217,7 +218,7 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
    */
   @VisibleForTesting
   FlinkDiagnosticsMessage createDiagnosticsMessage() {
-    MetricsSnapshot metricsSnapshot = MetricsSnapshot.convertToMetricsSnapshot(metricsGroup);
+    MetricsSnapshot metricsSnapshot = FlinkMetricsSnapshot.convertToMetricsSnapshot(metricsGroup);
     return new FlinkDiagnosticsMessage(metricHeader, metricsSnapshot, getIsAutoSizingEnabled(), System.currentTimeMillis());
   }
 

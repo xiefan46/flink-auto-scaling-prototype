@@ -17,13 +17,14 @@
 
 package org.apache.flink.diagnostics.model.serde;
 
-import com.linkedin.asc.model.DiagnosticsMessage;
-import com.linkedin.asc.model.MetricHeader;
+import org.apache.flink.model.MetricHeader;
+import org.apache.flink.model.MetricsSnapshot;
 import java.io.IOException;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
 import org.apache.flink.diagnostics.model.FlinkMetricsHeader;
+import org.apache.flink.diagnostics.model.FlinkMetricsSnapshot;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonParser;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.DeserializationContext;
@@ -46,6 +47,7 @@ public class FlinkDiagnosticsMessageDeserializationSchema implements Deserializa
 		ObjectMapper objectMapper = new ObjectMapper();
 		SimpleModule module = new SimpleModule("SamzaModule");
 		module.addDeserializer(MetricHeader.class, new MetricHeaderDeserializer());
+		module.addDeserializer(MetricsSnapshot.class, new MetricsSnapshotDeserializer());
 		objectMapper.registerModule(module);
 		return objectMapper;
 	}
@@ -72,6 +74,15 @@ public class FlinkDiagnosticsMessageDeserializationSchema implements Deserializa
 		public MetricHeader deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
 				throws IOException, JsonProcessingException {
 			return jsonParser.readValueAs(FlinkMetricsHeader.class);
+		}
+	}
+
+	static class MetricsSnapshotDeserializer extends JsonDeserializer<MetricsSnapshot> {
+
+		@Override
+		public MetricsSnapshot deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
+				throws IOException, JsonProcessingException {
+			return jsonParser.readValueAs(FlinkMetricsSnapshot.class);
 		}
 	}
 

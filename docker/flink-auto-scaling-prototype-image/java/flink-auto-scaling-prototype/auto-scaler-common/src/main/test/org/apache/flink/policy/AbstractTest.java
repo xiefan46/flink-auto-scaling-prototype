@@ -1,16 +1,18 @@
-package org.apache.flink.asc.policy;
+package org.apache.flink.policy;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
-import org.apache.flink.asc.config.FlinkASCConfig;
+
+import org.apache.flink.config.ASCConfig;
+import org.apache.flink.config.MapConfig;
 import org.apache.flink.datapipeline.DataPipeline;
 import org.apache.flink.model.JobKey;
 import org.apache.flink.model.JobState;
 import org.apache.flink.model.TimeWindow;
 import org.apache.flink.model.functions.MaxFunc;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 import org.testng.annotations.BeforeClass;
 
 
@@ -27,7 +29,7 @@ public class AbstractTest {
   protected static final String PROD_JOB = "samza-prod-job";
   protected static JobKey TEST_JOB_KEY;
   protected static JobKey PROD_JOB_KEY;
-  protected FlinkASCConfig ascConfig;
+  protected ASCConfig ascConfig;
   protected JobState testJobState;
 
   @BeforeClass
@@ -35,17 +37,17 @@ public class AbstractTest {
     this.ascConfig = getMockSamzaASCConfig(configOverride());
   }
 
-  protected FlinkASCConfig getMockSamzaASCConfig(Map<String, String> configOverride) {
+  protected ASCConfig getMockSamzaASCConfig(Map<String, String> configOverride) {
     Map<String, String> configMap = new HashMap<>();
-    configMap.put("samzaasc.policy.stateless.maxcontainermb", MAX_CONTAINER_MEMORY_MB + "");
-    configMap.put("samzaasc.policy.stateless.maxcontainernumthreads", MAX_CONTAINER_NUM_THREADS + "");
-    configMap.put("samzaasc.policy.stateless.maxjobmemorymb", MAX_JOB_MEMORY_MB + "");
-    configMap.put("samzaasc.policy.stateless.maxnumvcorespercontainer", MAX_NUM_VCORES_PER_CONTAINER + "");
-    configMap.put("samzaasc.policy.stateless.maxnumvcoresperjob", MAX_NUM_VCORES_PER_JOB + "");
+    configMap.put("asc.policy.stateless.maxcontainermb", MAX_CONTAINER_MEMORY_MB + "");
+    configMap.put("asc.policy.stateless.maxcontainernumthreads", MAX_CONTAINER_NUM_THREADS + "");
+    configMap.put("asc.policy.stateless.maxjobmemorymb", MAX_JOB_MEMORY_MB + "");
+    configMap.put("asc.policy.stateless.maxnumvcorespercontainer", MAX_NUM_VCORES_PER_CONTAINER + "");
+    configMap.put("asc.policy.stateless.maxnumvcoresperjob", MAX_NUM_VCORES_PER_JOB + "");
     if (configOverride != null) {
       configMap.putAll(configOverride);
     }
-    return new FlinkASCConfig();
+    return new ASCConfig(new MapConfig(configMap));
   }
 
   //Override this method if you have some customized configs for your test case

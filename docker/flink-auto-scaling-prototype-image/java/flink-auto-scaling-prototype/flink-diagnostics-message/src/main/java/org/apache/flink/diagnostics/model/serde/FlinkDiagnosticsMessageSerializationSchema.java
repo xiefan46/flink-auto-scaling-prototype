@@ -17,16 +17,10 @@
 
 package org.apache.flink.diagnostics.model.serde;
 
-import com.linkedin.asc.model.MetricHeader;
-import java.io.IOException;
 import javax.annotation.Nullable;
 import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
-import org.apache.flink.diagnostics.model.FlinkMetricsHeader;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonParser;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.DeserializationContext;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 import org.apache.kafka.clients.producer.ProducerRecord;

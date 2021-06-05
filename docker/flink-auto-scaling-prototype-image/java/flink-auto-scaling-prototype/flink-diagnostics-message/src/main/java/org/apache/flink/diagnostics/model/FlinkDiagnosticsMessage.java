@@ -1,10 +1,8 @@
 package org.apache.flink.diagnostics.model;
 
-import com.linkedin.asc.model.DiagnosticsMessage;
-import com.linkedin.asc.model.MetricHeader;
-import com.linkedin.asc.model.MetricsSnapshot;
+import org.apache.flink.model.DiagnosticsMessage;
+import org.apache.flink.model.MetricsSnapshot;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.ToString;
 
 
