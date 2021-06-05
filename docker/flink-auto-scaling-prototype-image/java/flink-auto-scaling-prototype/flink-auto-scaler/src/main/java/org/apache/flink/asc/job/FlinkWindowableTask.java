@@ -1,8 +1,10 @@
 package org.apache.flink.asc.job;
 
-import org.apache.flink.datapipeline.DataPipeline;
-import org.apache.flink.model.JobKey;
-import org.apache.flink.model.SizingAction;
+import com.linkedin.asc.action.ActionRegistry;
+import com.linkedin.asc.datapipeline.DataPipeline;
+import com.linkedin.asc.model.JobKey;
+import com.linkedin.asc.model.SizingAction;
+import com.linkedin.asc.policy.Policy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,8 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import org.apache.flink.action.ActionRegistry;
-import org.apache.flink.policy.Policy;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;

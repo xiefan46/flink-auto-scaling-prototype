@@ -19,7 +19,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.flink</groupId>
+      <groupId>com.linkedin.asc</groupId>
       <artifactId>auto-scaler-common</artifactId>
       <version>1.0-SNAPSHOT</version>
       <scope>compile</scope>

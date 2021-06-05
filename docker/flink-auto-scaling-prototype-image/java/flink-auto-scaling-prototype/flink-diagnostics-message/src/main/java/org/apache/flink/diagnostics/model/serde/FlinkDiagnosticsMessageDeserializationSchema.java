@@ -17,8 +17,8 @@
 
 package org.apache.flink.diagnostics.model.serde;
 
-import org.apache.flink.model.MetricHeader;
-import org.apache.flink.model.MetricsSnapshot;
+import com.linkedin.asc.model.MetricHeader;
+import com.linkedin.asc.model.MetricsSnapshot;
 import java.io.IOException;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;

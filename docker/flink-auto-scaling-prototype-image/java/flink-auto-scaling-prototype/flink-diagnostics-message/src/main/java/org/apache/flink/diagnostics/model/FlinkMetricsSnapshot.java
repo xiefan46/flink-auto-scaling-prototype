@@ -1,6 +1,6 @@
 package org.apache.flink.diagnostics.model;
 
-import org.apache.flink.model.MetricsSnapshot;
+import com.linkedin.asc.model.MetricsSnapshot;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.flink.metrics.Counter;

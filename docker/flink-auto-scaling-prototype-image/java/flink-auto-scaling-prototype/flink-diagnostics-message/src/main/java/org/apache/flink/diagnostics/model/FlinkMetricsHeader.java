@@ -1,6 +1,6 @@
 package org.apache.flink.diagnostics.model;
 
-import org.apache.flink.model.MetricHeader;
+import com.linkedin.asc.model.MetricHeader;
 import java.util.HashMap;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
