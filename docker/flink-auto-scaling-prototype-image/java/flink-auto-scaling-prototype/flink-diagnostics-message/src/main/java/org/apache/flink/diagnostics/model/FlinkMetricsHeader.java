@@ -32,7 +32,7 @@ public class FlinkMetricsHeader extends HashMap<String, String> implements Metri
     return get(JOB_ID_KEY);
   }
 
-  //One container only has one TM, so we can use the TM ID to name the container
+  //We assume one container only has one TM, so we can use the TM ID to name the container
   @Override
   public String getContainerName() {
     return get(TM_ID_KEY);

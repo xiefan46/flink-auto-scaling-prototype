@@ -1,5 +1,6 @@
 package org.apache.flink.asc.datapipeline.dataprovider;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.linkedin.asc.config.Config;
 import com.linkedin.asc.datapipeline.DataPipeline;
 import com.linkedin.asc.datapipeline.dataprovider.DiagnosticsStreamDataProvider;
@@ -12,6 +13,7 @@ import com.linkedin.asc.model.MetricsSnapshot;
 import com.linkedin.asc.model.TimeWindow;
 import com.linkedin.asc.model.functions.FoldLeftFunction;
 import com.linkedin.asc.model.functions.MaxFunc;
+import com.linkedin.asc.store.Entry;
 import com.linkedin.asc.store.KeyValueIterator;
 import com.linkedin.asc.store.KeyValueStore;
 import java.time.Duration;
@@ -19,19 +21,18 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.flink.diagnostics.model.FlinkMetricsSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-
-@AllArgsConstructor
 public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamDataProvider {
 
   private final static Logger LOG = LoggerFactory.getLogger(
@@ -41,6 +42,8 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
   protected final static int MAX_ATTEMPIDS_PER_JOB_TO_STORE = 100;
 
   private static final TemporalUnit TIMESTAMP_GRANULARITY = ChronoUnit.MINUTES;
+
+  private static final String VCORE_USAGE_RATE_KEY_NAME = "Load";
 
   private final DataPipeline dataPipeline;
 
@@ -56,13 +59,24 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
 
   private final Duration processVCoreUsageWindowSize;
 
+  public FlinkDiagnosticsStreamDataProvider(DataPipeline dataPipeline, KeyValueStore<JobKey, JobState> jobStateStore,
+      KeyValueStore<String, LinkedList<String>> jobAttemptsStore,
+      KeyValueStore<JobKey, TimeWindow> processVcoreUsageMetricStore, Duration processVCoreUsageWindowSize) {
+    this.dataPipeline = dataPipeline;
+    this.jobStateStore = jobStateStore;
+    this.jobAttemptsStore = jobAttemptsStore;
+    this.processVcoreUsageMetricStore = processVcoreUsageMetricStore;
+    this.processVCoreUsageWindowSize = processVCoreUsageWindowSize;
+  }
+
   @Override
   public void receiveData(DiagnosticsMessage diagnosticsMessage) {
-
-    boolean storeUpdated = this.updateJobStateAndAttemptStores(diagnosticsMessage, diagnosticsMessage.getTimestamp());
-    // if any jobState or attempt store was updated, only then we update the diagnostics/error stores, and cleanupIf reqd
-    if (storeUpdated) {
-      this.updateMetricWindowStores(diagnosticsMessage, diagnosticsMessage.getTimestamp());
+    if(diagnosticsMessage != null) {
+      boolean storeUpdated = this.updateJobStateAndAttemptStores(diagnosticsMessage, diagnosticsMessage.getTimestamp());
+      // if any jobState or attempt store was updated, only then we update the diagnostics/error stores, and cleanupIf reqd
+      if (storeUpdated) {
+        this.updateMetricWindowStores(diagnosticsMessage, diagnosticsMessage.getTimestamp());
+      }
     }
   }
 
@@ -74,9 +88,9 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
   @Override
   public Set<JobKey> getLatestAttempts() {
     Set<JobKey> latestJobAttempts = new HashSet<>();
-    KeyValueIterator<String, LinkedList<String>> jobsIterator = null;
+    KeyValueIterator<String, LinkedList<String>> jobsIterator = this.jobAttemptsStore.all();
     while (jobsIterator.hasNext()) {
-      Map.Entry<String, LinkedList<String>> entry = jobsIterator.next();
+      Entry<String, LinkedList<String>> entry = jobsIterator.next();
       String jobId = entry.getKey();
       String latestAttemptID = entry.getValue().getLast();
       latestJobAttempts.add(
@@ -85,6 +99,23 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
     jobsIterator.close();
     return latestJobAttempts;
   }
+
+  @Override
+  public TimeWindow getProcessVcoreUsageMetricWindow(JobKey job) {
+    return this.processVcoreUsageMetricStore.get(job);
+  }
+
+  /**
+   * Get the recorded {@link JobState} for all jobs, instances, attempts.
+   */
+  public Map<JobKey, JobState> getAllJobsState() {
+    Map<JobKey, JobState> jobsMap = new HashMap<>();
+    KeyValueIterator<JobKey, JobState> jobsIterator = this.jobStateStore.all();
+    jobsIterator.forEachRemaining(entry -> jobsMap.put(entry.getKey(), entry.getValue()));
+    jobsIterator.close();
+    return jobsMap;
+  }
+
 
   /**
    * jobAttemptsStore appropriately.
@@ -256,9 +287,17 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
         processVCoreUsageWindowSize, MaxFunc.MAX_FUNC);
   }
 
-  //TODO
+
   private double extractProcessVcoreUsage(DiagnosticsMessage diagnosticsMessage) {
-    return 0;
+    MetricsSnapshot metricsSnapshot = diagnosticsMessage.getMetricsSnapshot();
+    Map<String, Object> cpuMetricGroup = FlinkMetricsSnapshot.visitMetricGroupMap(metricsSnapshot,
+        new String[]{"taskmanager", "Status", "CPU"}, false);
+    if(cpuMetricGroup == null) {
+      LOG.error("Can't find cpuMetricGroup in diagnosticsMessage");
+      return 0;
+    }
+    double vcoreUsageRate = new Double(String.valueOf(cpuMetricGroup.get(VCORE_USAGE_RATE_KEY_NAME)));
+    return vcoreUsageRate;
   }
 
   private void addMetricValueToStore(KeyValueStore<JobKey, TimeWindow> store, JobKey jobKey, Instant timestamp,

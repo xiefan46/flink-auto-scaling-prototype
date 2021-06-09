@@ -19,6 +19,12 @@ public class FlinkMetricsSnapshot extends MetricsSnapshot {
     return metricsSnapshot;
   }
 
+  private  FlinkMetricsSnapshot(){
+
+  }
+
+
+
   /**
    * Currently, We only need counter and gauge type in auto scaling
    */
@@ -35,7 +41,30 @@ public class FlinkMetricsSnapshot extends MetricsSnapshot {
           targetMetricGroup.put(key, new HashMap<>());
         }
         visit((Map<String, Object>)o, (Map<String, Object>) targetMetricGroup.get(key));
+      } else {
+        LOG.debug("Ignore other types");
       }
     }
   }
+
+  /**
+   *  Find the child metric group in MetricGroupMap that directly stores this metric
+   */
+  public static Map<String, Object> visitMetricGroupMap(Map<String, Object> currentGroup, String[] groupNames,
+      boolean createChildGroup) {
+    for (String group : groupNames) {
+      Map<String, Object> childGroup = (Map<String, Object>) currentGroup.get(group);
+      if (childGroup == null) {
+        if(createChildGroup) {
+          childGroup = new HashMap<>();
+          currentGroup.put(group, childGroup);
+        }else{
+          return null;
+        }
+      }
+      currentGroup = childGroup;
+    }
+    return currentGroup;
+  }
+
 }

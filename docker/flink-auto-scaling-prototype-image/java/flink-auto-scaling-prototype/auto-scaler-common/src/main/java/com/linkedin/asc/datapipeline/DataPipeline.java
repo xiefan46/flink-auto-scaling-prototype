@@ -48,7 +48,7 @@ public class DataPipeline {
   }
 
   public TimeWindow getProcessVcoreUsageMetricWindow(JobKey job) {
-    return null;
+    return this.diagnosticsStreamDataProvider.getProcessVcoreUsageMetricWindow(job);
   }
 
   public Config getJobConfig(JobKey jobKey) {

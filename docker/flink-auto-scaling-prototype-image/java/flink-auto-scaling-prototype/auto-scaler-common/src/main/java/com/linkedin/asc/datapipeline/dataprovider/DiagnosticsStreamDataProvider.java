@@ -3,6 +3,8 @@ package com.linkedin.asc.datapipeline.dataprovider;
 import com.linkedin.asc.model.DiagnosticsMessage;
 import com.linkedin.asc.model.JobKey;
 import com.linkedin.asc.model.JobState;
+import com.linkedin.asc.model.TimeWindow;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -15,4 +17,8 @@ public interface DiagnosticsStreamDataProvider {
   void receiveData(DiagnosticsMessage diagnosticsMessage);
 
   Set<JobKey> getLatestAttempts();
+
+  TimeWindow getProcessVcoreUsageMetricWindow(JobKey job);
+
+  Map<JobKey, JobState> getAllJobsState();
 }

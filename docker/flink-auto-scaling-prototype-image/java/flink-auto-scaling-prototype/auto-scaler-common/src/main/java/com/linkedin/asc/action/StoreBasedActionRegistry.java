@@ -3,6 +3,7 @@ package com.linkedin.asc.action;
 import com.linkedin.asc.datapipeline.dataprovider.ResourceManagerDataProvider;
 import com.linkedin.asc.model.JobKey;
 import com.linkedin.asc.model.SizingAction;
+import com.linkedin.asc.store.Entry;
 import com.linkedin.asc.store.KeyValueIterator;
 import com.linkedin.asc.store.KeyValueStore;
 import com.linkedin.asc.util.Utils;
@@ -59,7 +60,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
       // iterate on the pendingActionsStore and populate actionsToIssue
       KeyValueIterator<String, List<SizingAction>> iterator = pendingActionsStore.all();
       while (iterator.hasNext()) {
-        Map.Entry<String, List<SizingAction>> actionList = iterator.next();
+        Entry<String, List<SizingAction>> actionList = iterator.next();
         long sizingActionsEnqueuedCount = actionList.getValue()
             .stream()
             .filter(action -> action.getStatus().equals(SizingAction.Status.ENQUEUED))
@@ -160,7 +161,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
           // iterate on the pendingActionsStore and populate actionsToIssue
           KeyValueIterator<String, List<SizingAction>> iterator = pendingActionsStore.all();
           while (iterator.hasNext()) {
-            Map.Entry<String, List<SizingAction>> actionList = iterator.next();
+            Entry<String, List<SizingAction>> actionList = iterator.next();
             Optional<SizingAction> action = getActionToIssue(actionList.getValue());
 
             if (action.isPresent()) {

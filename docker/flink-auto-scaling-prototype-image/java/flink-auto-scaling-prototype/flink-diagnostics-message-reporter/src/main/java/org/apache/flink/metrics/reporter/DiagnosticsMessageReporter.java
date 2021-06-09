@@ -139,7 +139,7 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
         return;
       }
       updateMetricHeader(group);
-      Map<String, Object> childGroup = visitMetricGroupMap(groupNames);
+      Map<String, Object> childGroup = FlinkMetricsSnapshot.visitMetricGroupMap(metricsGroup, groupNames, true);
       childGroup.put(metricName, metric);
     }
   }
@@ -151,7 +151,7 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
       if (!checkGroupNames(groupNames, metricName)) {
         return;
       }
-      Map<String, Object> childGroup = visitMetricGroupMap(groupNames);
+      Map<String, Object> childGroup = FlinkMetricsSnapshot.visitMetricGroupMap(metricsGroup, groupNames,true);
       childGroup.remove(metricName);
     }
   }
@@ -178,21 +178,6 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
     return true;
   }
 
-  /**
-   *  Find the child metric group in MetricGroupMap that directly stores this metric
-   */
-  private Map<String, Object> visitMetricGroupMap(String[] groupNames) {
-    Map<String, Object> currentGroup = metricsGroup;
-    for (String group : groupNames) {
-      Map<String, Object> childGroup = (Map<String, Object>) currentGroup.get(group);
-      if (childGroup == null) {
-        childGroup = new HashMap<>();
-        currentGroup.put(group, childGroup);
-      }
-      currentGroup = childGroup;
-    }
-    return currentGroup;
-  }
 
   @Override
   public void report() {
