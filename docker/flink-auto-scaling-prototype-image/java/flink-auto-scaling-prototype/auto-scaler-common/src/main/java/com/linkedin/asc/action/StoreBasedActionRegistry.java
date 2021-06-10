@@ -8,7 +8,6 @@ import com.linkedin.asc.store.Entry;
 import com.linkedin.asc.store.KeyValueIterator;
 import com.linkedin.asc.store.KeyValueStore;
 import com.linkedin.asc.util.Utils;
-import com.sun.javafx.font.Metrics;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
