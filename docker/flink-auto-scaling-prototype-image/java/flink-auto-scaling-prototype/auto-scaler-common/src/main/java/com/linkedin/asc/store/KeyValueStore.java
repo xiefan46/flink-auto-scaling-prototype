@@ -57,7 +57,7 @@ public interface KeyValueStore<K, V> {
    * @param entries the updated mappings to put into this key-value store.
    * @throws NullPointerException if any of the specified {@code entries} has {@code null} as key or value.
    */
-  void putAll(List<Map.Entry<K, V>> entries);
+  void putAll(List<Entry<K, V>> entries);
 
   /**
    * Deletes the mapping for the specified {@code key} from this key-value store (if such mapping exists).

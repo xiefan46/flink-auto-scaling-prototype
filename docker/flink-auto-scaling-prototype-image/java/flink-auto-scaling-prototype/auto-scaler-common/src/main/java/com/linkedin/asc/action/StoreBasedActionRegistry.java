@@ -1,5 +1,6 @@
 package com.linkedin.asc.action;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.linkedin.asc.datapipeline.dataprovider.ResourceManagerDataProvider;
 import com.linkedin.asc.model.JobKey;
 import com.linkedin.asc.model.SizingAction;
@@ -7,6 +8,7 @@ import com.linkedin.asc.store.Entry;
 import com.linkedin.asc.store.KeyValueIterator;
 import com.linkedin.asc.store.KeyValueStore;
 import com.linkedin.asc.util.Utils;
+import com.sun.javafx.font.Metrics;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -32,7 +35,7 @@ public class StoreBasedActionRegistry implements ActionRegistry {
   // KVStore for queuing/storing pending actions, indexed by jobName-instanceID.
   // For each job, we store an ordered list of actions enqueued/issued for it.
   // We limit the size of the list so that its serialized size is less than 1 MB
-  //private final KeyValueStore<JobNameInstanceIDPair, List<SizingAction>> pendingActionsStore;
+  private final KeyValueStore<String, List<SizingAction>> pendingActionsStore;
 
   // Enforcer used to apply the registered action
   private ActionEnforcer actionEnforcer;
@@ -49,7 +52,17 @@ public class StoreBasedActionRegistry implements ActionRegistry {
   private volatile boolean shouldShutdown = false;
   private volatile Duration shutdownWaitTimeout = Duration.ofSeconds(30);
   private final ResourceManagerDataProvider resourceManagerDataProvider;
-  private final KeyValueStore<String, List<SizingAction>> pendingActionsStore;
+
+  public StoreBasedActionRegistry(KeyValueStore<String, List<SizingAction>> pendingActionsStore,
+      ResourceManagerDataProvider resourceManagerDataProvider, ActionEnforcer actionEnforcer, String threadNamePrefix) {
+    this.resourceManagerDataProvider =  resourceManagerDataProvider;
+    this.pendingActionsStore = pendingActionsStore;
+    this.actionEnforcer = actionEnforcer;
+    this.executorService = Executors.newSingleThreadExecutor(
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat(threadNamePrefix + "-Action-Registry").build());
+    this.executorService.submit(new ApplyActionsRunnable());
+    this.initializeMetricValues();
+  }
 
   /**
    * Initialize metric values using the contents of the store.

@@ -62,8 +62,8 @@ public class InternalInMemoryStore<K, V> implements KeyValueStore<K, V> {
   }
 
   @Override
-  public void putAll(List<Map.Entry<K, V>> entries) {
-    for (Map.Entry<K, V> entry : entries) {
+  public void putAll(List<Entry<K, V>> entries) {
+    for (Entry<K, V> entry : entries) {
       put(entry.getKey(), entry.getValue());
     }
   }

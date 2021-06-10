@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
  * Stores and buffers all incoming data and metrics from multiple data providers.
  * {@link DiagnosticsStreamDataProvider} - parses the diagnostics stream and buffers data.
  */
-@AllArgsConstructor
 public class DataPipeline {
 
   private static final Logger LOG = LoggerFactory.getLogger(DataPipeline.class);
@@ -29,9 +28,13 @@ public class DataPipeline {
 
   private final ConfigDataProvider configDataProvider;
 
+  public DataPipeline(DiagnosticsStreamDataProvider diagnosticsStreamDataProvider, ConfigDataProvider configDataProvider){
+      this.diagnosticsStreamDataProvider = diagnosticsStreamDataProvider;
+      this.configDataProvider = configDataProvider;
+  }
 
   public void processReceivedData(DiagnosticsMessage diagnosticsMessage) {
-    this.diagnosticsStreamDataProvider.receiveData(diagnosticsMessage);
+    this.diagnosticsStreamDataProvider.receiveData(diagnosticsMessage, this);
   }
 
   /**

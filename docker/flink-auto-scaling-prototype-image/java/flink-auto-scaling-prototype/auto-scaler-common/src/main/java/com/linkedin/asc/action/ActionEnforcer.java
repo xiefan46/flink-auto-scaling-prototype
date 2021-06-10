@@ -18,5 +18,5 @@ public interface ActionEnforcer {
    * Applies the action and disable auto-sizing at the same time
    * @param sizingAction
    */
-  void applyActionAndDisableAutoSizing(SizingAction sizingAction) throws Exception;
+  void applyActionAndDisableAutoScaling(SizingAction sizingAction) throws Exception;
 }

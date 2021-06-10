@@ -58,6 +58,8 @@ public class TestFlinkDiagnosticsStreamDataProvider {
 
   private DiagnosticsStreamDataProvider diagnosticsStreamDataProvider;
 
+  private DataPipeline dataPipeline;
+
   private ASCConfig getMockASCConfig() {
     Map<String, String> map = new HashMap<>();
     map.put("asc.metric.process.vcore.usage.whitelist", "");
@@ -85,13 +87,14 @@ public class TestFlinkDiagnosticsStreamDataProvider {
 
   @Before
   public void setup() throws Exception {
+    dataPipeline = Mockito.mock(DataPipeline.class);
     diagnosticsStreamDataProvider = createDiagnosticsStreamDataProvider();
   }
 
   @Test
   public void testNullDiagnosticsMessage() {
     FlinkDiagnosticsStreamDataProvider diagnosticsStreamDataProvider = createDiagnosticsStreamDataProvider();
-    diagnosticsStreamDataProvider.receiveData(null);
+    diagnosticsStreamDataProvider.receiveData(null, dataPipeline);
     Assert.assertTrue(diagnosticsStreamDataProvider.getAllJobsState().isEmpty());
   }
 
@@ -100,7 +103,7 @@ public class TestFlinkDiagnosticsStreamDataProvider {
 
     DiagnosticsMessage diagnosticsMessage = createFlinkTaskManagerDiagnosticsMessage(JOB_NAME, ATTEMPT_ID, TM_ID, true, 0.1, TIMESTAMP);
     // Setting timestamp as the eventTime in the IME (used for parsing)
-    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage);
+    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage, dataPipeline);
 
     Map<JobKey, JobState> jobs = diagnosticsStreamDataProvider.getAllJobsState();
     Assert.assertEquals(jobs.size(), 1);
@@ -120,15 +123,15 @@ public class TestFlinkDiagnosticsStreamDataProvider {
         true, 0.1, TIMESTAMP);
 
     //New attempt id
-    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage);
+    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage, dataPipeline);
     DiagnosticsMessage diagnosticsMessage2 = createFlinkTaskManagerDiagnosticsMessage(JOB_NAME, ATTEMPT_ID2, TM_ID,
         true, 0.1, TIMESTAMP + 2);
-    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage2);
+    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage2, dataPipeline);
 
     //Test out-of-order processing
     DiagnosticsMessage diagnosticsMessage3 = createFlinkTaskManagerDiagnosticsMessage(JOB_NAME, ATTEMPT_ID, TM_ID,
         true, 0.1, TIMESTAMP + 1);
-    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage3);
+    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage3, dataPipeline);
 
     Assert.assertTrue(diagnosticsStreamDataProvider.getLatestAttempts()
             .equals(Collections.singleton(new JobKey(JOB_NAME, ATTEMPT_ID2))), "Should return a map with one row that is the jobKey of the latest job");
@@ -140,7 +143,7 @@ public class TestFlinkDiagnosticsStreamDataProvider {
     DiagnosticsMessage diagnosticsMessage = createFlinkTaskManagerDiagnosticsMessage(JOB_NAME, ATTEMPT_ID, TM_ID,
         true, 0.1, TIMESTAMP);
 
-    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage);
+    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage, dataPipeline);
 
     Map<JobKey, JobState> jobs = diagnosticsStreamDataProvider.getAllJobsState();
     JobKey jobKey = new JobKey(JOB_NAME, ATTEMPT_ID);
@@ -151,7 +154,7 @@ public class TestFlinkDiagnosticsStreamDataProvider {
     // We receive a metricsMessage with auto-sizing disabled
     diagnosticsMessage = createFlinkTaskManagerDiagnosticsMessage(JOB_NAME, ATTEMPT_ID2, TM_ID,
         false, 0.1, TIMESTAMP + 1);
-    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage);
+    diagnosticsStreamDataProvider.receiveData(diagnosticsMessage, dataPipeline);
 
     // All state stores should now be empty
     Assert.assertTrue(diagnosticsStreamDataProvider.getAllJobsState().isEmpty());
@@ -183,7 +186,7 @@ public class TestFlinkDiagnosticsStreamDataProvider {
           MaxFunc.MAX_FUNC);
       DiagnosticsMessage diagnosticsMessage = createFlinkTaskManagerDiagnosticsMessage(JOB_NAME, ATTEMPT_ID, TM_ID,
           true, randProcessCPUUsage, time);
-      diagnosticsStreamDataProvider.receiveData(diagnosticsMessage);
+      diagnosticsStreamDataProvider.receiveData(diagnosticsMessage, dataPipeline);
     }
     Map<JobKey, JobState> jobStates = diagnosticsStreamDataProvider.getAllJobsState();
     org.testng.Assert.assertEquals(jobStates.size(), 1);
@@ -194,10 +197,9 @@ public class TestFlinkDiagnosticsStreamDataProvider {
   }
 
   private FlinkDiagnosticsStreamDataProvider createDiagnosticsStreamDataProvider() {
-    DataPipeline dataPipeline = Mockito.mock(DataPipeline.class);
 
     FlinkDiagnosticsStreamDataProvider flinkDiagnosticsStreamDataProvider =
-        new FlinkDiagnosticsStreamDataProvider(dataPipeline, jobStateStore, jobAttemptsStore, processVcoreUsageMetricStore,
+        new FlinkDiagnosticsStreamDataProvider(jobStateStore, jobAttemptsStore, processVcoreUsageMetricStore,
             processVCoreUsageWindowSize);
     return flinkDiagnosticsStreamDataProvider;
   }

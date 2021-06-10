@@ -45,8 +45,6 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
 
   private static final String VCORE_USAGE_RATE_KEY_NAME = "Load";
 
-  private final DataPipeline dataPipeline;
-
   /**
    * Persistent states that store all the information we need for auto scaling
    */
@@ -59,10 +57,9 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
 
   private final Duration processVCoreUsageWindowSize;
 
-  public FlinkDiagnosticsStreamDataProvider(DataPipeline dataPipeline, KeyValueStore<JobKey, JobState> jobStateStore,
+  public FlinkDiagnosticsStreamDataProvider(KeyValueStore<JobKey, JobState> jobStateStore,
       KeyValueStore<String, LinkedList<String>> jobAttemptsStore,
       KeyValueStore<JobKey, TimeWindow> processVcoreUsageMetricStore, Duration processVCoreUsageWindowSize) {
-    this.dataPipeline = dataPipeline;
     this.jobStateStore = jobStateStore;
     this.jobAttemptsStore = jobAttemptsStore;
     this.processVcoreUsageMetricStore = processVcoreUsageMetricStore;
@@ -70,9 +67,9 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
   }
 
   @Override
-  public void receiveData(DiagnosticsMessage diagnosticsMessage) {
+  public void receiveData(DiagnosticsMessage diagnosticsMessage, DataPipeline dataPipeline) {
     if(diagnosticsMessage != null) {
-      boolean storeUpdated = this.updateJobStateAndAttemptStores(diagnosticsMessage, diagnosticsMessage.getTimestamp());
+      boolean storeUpdated = this.updateJobStateAndAttemptStores(diagnosticsMessage, dataPipeline, diagnosticsMessage.getTimestamp());
       // if any jobState or attempt store was updated, only then we update the diagnostics/error stores, and cleanupIf reqd
       if (storeUpdated) {
         this.updateMetricWindowStores(diagnosticsMessage, diagnosticsMessage.getTimestamp());
@@ -121,7 +118,7 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
    * jobAttemptsStore appropriately.
    * @return true if any store is updated, false otherwise
    */
-  private boolean updateJobStateAndAttemptStores(DiagnosticsMessage diagnosticsMessage, long eventTime) {
+  private boolean updateJobStateAndAttemptStores(DiagnosticsMessage diagnosticsMessage, DataPipeline dataPipeline, long eventTime) {
     MetricHeader metricHeader = diagnosticsMessage.getMetricHeader();
     MetricsSnapshot metricsSnapshot = diagnosticsMessage.getMetricsSnapshot();
     String jobID = metricHeader.getJobId();

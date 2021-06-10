@@ -1,5 +1,6 @@
 package com.linkedin.asc.datapipeline.dataprovider;
 
+import com.linkedin.asc.datapipeline.DataPipeline;
 import com.linkedin.asc.model.DiagnosticsMessage;
 import com.linkedin.asc.model.JobKey;
 import com.linkedin.asc.model.JobState;
@@ -14,7 +15,7 @@ import java.util.Set;
  */
 public interface DiagnosticsStreamDataProvider {
 
-  void receiveData(DiagnosticsMessage diagnosticsMessage);
+  void receiveData(DiagnosticsMessage diagnosticsMessage, DataPipeline dataPipeline);
 
   Set<JobKey> getLatestAttempts();
 

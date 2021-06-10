@@ -1,9 +1,17 @@
 package org.apache.flink.asc.datapipeline.dataprovider;
 
-public class MockFlinkConfigDataProvider {
-  private static final String CONTAINER_MB_METRIC_NAME = "containerMemoryMb";
-  private static final String CONTAINER_NUM_CORES_METRIC_NAME = "containerNumCores";
-  private static final String CONTAINER_COUNT = "containerCount";
-  private static final String AUTOSIZING_ENABLED_METRIC_NAME = "autosizingEnabled";
+import com.linkedin.asc.config.Config;
+import com.linkedin.asc.datapipeline.dataprovider.ConfigDataProvider;
+import com.linkedin.asc.model.JobKey;
 
+
+/**
+ * TODO: Talk to the Control plane team and flink hilo team to discuss about how to get Flink configs
+ */
+public class MockFlinkConfigDataProvider implements ConfigDataProvider {
+
+  @Override
+  public Config getJobConfig(JobKey jobKey) {
+    return null;
+  }
 }
