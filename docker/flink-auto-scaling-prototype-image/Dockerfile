@@ -40,3 +40,5 @@ WORKDIR /opt/flink
 COPY --from=builder /opt/flink-auto-scaling-prototype/flink-playground-clickcountjob/target/flink-playground-clickcountjob-*.jar /opt/ClickCountJob.jar
 # Copy Diagnostics Metrics Reporter
 COPY --from=builder /opt/flink-auto-scaling-prototype/diagnostics-message-reporter/target/diagnostics-message-reporter-*.jar /opt/flink/plugins/diagnostics-message-reporter/diagnostics-message-reporter.jar
+# Copy Flink Auto Scaler
+COPY --from=builder /opt/flink-auto-scaling-prototype/flink-auto-scaler/target/flink-auto-scaler-*.jar /opt/FlinkAutoScaler.jar

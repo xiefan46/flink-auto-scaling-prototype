@@ -29,6 +29,16 @@ services:
       - ./conf:/opt/flink/conf
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
+  flink-auto-scaler:
+    image: apache/flink-auto-scaling-prototype-image-001
+    command: "flink run -p 2 -d /opt/FlinkAutoScaler.jar"
+    depends_on:
+      - jobmanager
+      - kafka
+    volumes:
+      - ./auto-scaler-conf:/opt/flink/conf
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
   clickevent-generator:
     image: apache/flink-auto-scaling-prototype-image-001
     command: "java -classpath /opt/ClickCountJob.jar:/opt/flink/lib/* org.apache.flink.playgrounds.ops.clickcount.ClickEventGenerator --bootstrap.servers kafka:9092 --topic input"

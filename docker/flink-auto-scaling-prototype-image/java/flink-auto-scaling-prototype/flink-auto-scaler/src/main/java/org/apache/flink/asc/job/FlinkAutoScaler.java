@@ -1,4 +1,4 @@
-package org.apache.flink.asc.job;/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,11 +15,15 @@ package org.apache.flink.asc.job;/*
  * limitations under the License.
  */
 
+package org.apache.flink.asc.job;
+
+import com.linkedin.asc.config.MapConfig;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.asc.config.FlinkASCConfig;
 import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
 import org.apache.flink.diagnostics.model.serde.FlinkDiagnosticsMessageDeserializationSchema;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -29,63 +33,52 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * This class provides an implementation of the Flink-ASC as a Flink job.
  */
 public class FlinkAutoScaler {
 
-  public static final String CHECKPOINTING_OPTION = "checkpointing";
-  public static final String EVENT_TIME_OPTION = "event-time";
-  public static final String OPERATOR_CHAINING_OPTION = "chaining";
+  private static final String INPUT_TOPIC_NAME = "flink-metrics";
+
+  private static final String KAFKA_BROKERS = "kafka:9092";
+
+  private static final String ASC_CONFIG_FILE_PATH = "./flink/conf/flink-asc-config.properties";
 
   public static final Time WINDOW_SIZE = Time.of(15, TimeUnit.SECONDS);
 
+  private static final Logger LOG = LoggerFactory.getLogger(FlinkAutoScaler.class);
+
   public static void main(String[] args) throws Exception {
-    final ParameterTool params = ParameterTool.fromArgs(args);
+    //We assume that the folder is /opt
+    final ParameterTool flinkASCConfigs = ParameterTool.fromPropertiesFile(ASC_CONFIG_FILE_PATH);
+
+    FlinkASCConfig flinkASCConfig = new FlinkASCConfig(new MapConfig(flinkASCConfigs.toMap()));
+
+    LOG.info("Load all flink asc configs: {}", flinkASCConfig);
 
     final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-    configureEnvironment(params, env);
 
-    String inputTopic = params.get("input-topic", "flink-metrics");
-    String outputTopic = params.get("output-topic", "output");
-    String brokers = params.get("bootstrap.servers", "localhost:9092");
     Properties kafkaProps = new Properties();
-    kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
+    kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKERS);
     kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "auto-scaler");
 
     DataStream<FlinkDiagnosticsMessage> source = env.addSource(
-        new FlinkKafkaConsumer<FlinkDiagnosticsMessage>(inputTopic, new FlinkDiagnosticsMessageDeserializationSchema(),
+        new FlinkKafkaConsumer<FlinkDiagnosticsMessage>(INPUT_TOPIC_NAME, new FlinkDiagnosticsMessageDeserializationSchema(),
             kafkaProps)).name("Flink Metrics Source");
 
     source.assignTimestampsAndWatermarks(
         WatermarkStrategy.<FlinkDiagnosticsMessage>forBoundedOutOfOrderness(Duration.ofMinutes(10)).withTimestampAssigner(
             (diagnosticsMessage, timestamp) -> diagnosticsMessage.getTimestamp()))
         .keyBy(diagnosticsMessage -> diagnosticsMessage.getMetricHeader().getJobId())
-        .process(new FlinkWindowableTask());
+        .process(new FlinkWindowableTask(flinkASCConfig));
 
-    env.execute("Auto Scaler");
+    env.execute("FlinkAutoScaler");
   }
 
-  private static void configureEnvironment(final ParameterTool params, final StreamExecutionEnvironment env) {
-
-    boolean checkpointingEnabled = params.has(CHECKPOINTING_OPTION);
-    boolean eventTimeSemantics = params.has(EVENT_TIME_OPTION);
-    boolean enableChaining = params.has(OPERATOR_CHAINING_OPTION);
-
-    if (checkpointingEnabled) {
-      env.enableCheckpointing(1000);
-    }
-
-    if (eventTimeSemantics) {
-      env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-    }
-
-    if (!enableChaining) {
-      //disabling Operator chaining to make it easier to follow the Job in the WebUI
-      env.disableOperatorChaining();
-    }
-  }
 }
 

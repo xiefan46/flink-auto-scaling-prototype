@@ -35,6 +35,7 @@ import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.asc.action.MockFlinkActionEnforcer;
+import org.apache.flink.asc.config.FlinkASCConfig;
 import org.apache.flink.asc.datapipeline.dataprovider.FlinkDiagnosticsStreamDataProvider;
 import org.apache.flink.asc.datapipeline.dataprovider.MockFlinkConfigDataProvider;
 import org.apache.flink.asc.datapipeline.dataprovider.MockFlinkResourceManagerDataProvider;
@@ -66,6 +67,12 @@ public class FlinkWindowableTask
   // Priority list of policies
   private List<Policy> policyList = new ArrayList<>();
 
+  private final FlinkASCConfig flinkASCConfig;
+
+  public FlinkWindowableTask(FlinkASCConfig flinkASCConfig) {
+    this.flinkASCConfig = flinkASCConfig;
+  }
+
   @Override
   public void open(Configuration parameters) throws Exception {
     /**
@@ -78,11 +85,10 @@ public class FlinkWindowableTask
       }
     }, 1, TimeUnit.MINUTES);
     //TODO: Figure out how to get ascConfig
-    ASCConfig ascConfig = null;
-    this.blacklistForAllPolicies = ascConfig.getBlacklistForAllPolicies();
-    this.dataPipeline = createDataPipeline(getRuntimeContext(), ascConfig);
-    this.actionRegistry = createActionRegistry(getRuntimeContext(), ascConfig);
-    initializePolicies(ascConfig);
+    this.blacklistForAllPolicies = flinkASCConfig.getBlacklistForAllPolicies();
+    this.dataPipeline = createDataPipeline(getRuntimeContext(), flinkASCConfig);
+    this.actionRegistry = createActionRegistry(getRuntimeContext(), flinkASCConfig);
+    initializePolicies(flinkASCConfig);
   }
 
   @Override
