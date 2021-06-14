@@ -11,7 +11,7 @@ import lombok.ToString;
  *  1. Do we need operator level information
  *  2. Check whether we need to change this for k8s
  */
-@ToString
+@ToString(callSuper=true)
 @EqualsAndHashCode
 public class FlinkMetricsHeader extends HashMap<String, String> implements MetricHeader {
 

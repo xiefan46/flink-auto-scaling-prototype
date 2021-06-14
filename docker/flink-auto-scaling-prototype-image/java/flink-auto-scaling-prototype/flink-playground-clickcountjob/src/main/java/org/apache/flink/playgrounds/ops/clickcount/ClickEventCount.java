@@ -113,7 +113,7 @@ public class ClickEventCount {
 				FlinkKafkaProducer.Semantic.AT_LEAST_ONCE))
 			.name("ClickEventStatistics Sink");
 
-		env.execute("Click Event Count");
+		env.execute("cpu-scaling-test-job");
 	}
 
 	private static void configureEnvironment(

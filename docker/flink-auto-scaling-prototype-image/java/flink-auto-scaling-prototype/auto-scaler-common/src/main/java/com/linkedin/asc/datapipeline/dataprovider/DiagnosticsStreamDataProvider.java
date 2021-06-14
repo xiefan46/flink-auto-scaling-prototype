@@ -22,4 +22,9 @@ public interface DiagnosticsStreamDataProvider {
   TimeWindow getProcessVcoreUsageMetricWindow(JobKey job);
 
   Map<JobKey, JobState> getAllJobsState();
+
+  /**
+   * Return the job state for the given job.
+   */
+  JobState getJobState(JobKey jobKey);
 }

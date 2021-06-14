@@ -17,16 +17,14 @@
 
 package org.apache.flink.asc.job;
 
-import com.linkedin.asc.config.MapConfig;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.asc.config.FlinkASCConfig;
 import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
 import org.apache.flink.diagnostics.model.serde.FlinkDiagnosticsMessageDeserializationSchema;
-import org.apache.flink.streaming.api.TimeCharacteristic;
+import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -46,7 +44,9 @@ public class FlinkAutoScaler {
 
   private static final String KAFKA_BROKERS = "kafka:9092";
 
-  private static final String ASC_CONFIG_FILE_PATH = "./flink/conf/flink-asc-config.properties";
+  private static final String ASC_CONFIG_FILE_PATH = "/opt/flink/conf/flink-asc-config.properties";
+
+  private static final int ASC_PARTITION_COUNT = 1;
 
   public static final Time WINDOW_SIZE = Time.of(15, TimeUnit.SECONDS);
 
@@ -54,31 +54,31 @@ public class FlinkAutoScaler {
 
   public static void main(String[] args) throws Exception {
     //We assume that the folder is /opt
-    final ParameterTool flinkASCConfigs = ParameterTool.fromPropertiesFile(ASC_CONFIG_FILE_PATH);
-
-    FlinkASCConfig flinkASCConfig = new FlinkASCConfig(new MapConfig(flinkASCConfigs.toMap()));
-
-    LOG.info("Load all flink asc configs: {}", flinkASCConfig);
-
+    final ParameterTool parameterTool = ParameterTool.fromPropertiesFile(ASC_CONFIG_FILE_PATH);
     final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+    env.getConfig().setGlobalJobParameters(parameterTool);
 
+    //debug
+    String currentPath = new java.io.File(".").getCanonicalPath();
+    System.out.println("Current dir:" + currentPath);
+    System.out.println("try get config asc.policy.cpuscaleup.window.ms:" + parameterTool.get("asc.policy.cpuscaleup.window.ms"));
 
     Properties kafkaProps = new Properties();
     kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BROKERS);
     kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "auto-scaler");
 
     DataStream<FlinkDiagnosticsMessage> source = env.addSource(
-        new FlinkKafkaConsumer<FlinkDiagnosticsMessage>(INPUT_TOPIC_NAME, new FlinkDiagnosticsMessageDeserializationSchema(),
-            kafkaProps)).name("Flink Metrics Source");
+        new FlinkKafkaConsumer<FlinkDiagnosticsMessage>(INPUT_TOPIC_NAME,
+            new FlinkDiagnosticsMessageDeserializationSchema(), kafkaProps)).name("Flink Metrics Source");
 
-    source.assignTimestampsAndWatermarks(
-        WatermarkStrategy.<FlinkDiagnosticsMessage>forBoundedOutOfOrderness(Duration.ofMinutes(10)).withTimestampAssigner(
-            (diagnosticsMessage, timestamp) -> diagnosticsMessage.getTimestamp()))
-        .keyBy(diagnosticsMessage -> diagnosticsMessage.getMetricHeader().getJobId())
-        .process(new FlinkWindowableTask(flinkASCConfig));
+    source.assignTimestampsAndWatermarks(WatermarkStrategy.<FlinkDiagnosticsMessage>forBoundedOutOfOrderness(
+        Duration.ofMinutes(10)).withTimestampAssigner(
+        (diagnosticsMessage, timestamp) -> diagnosticsMessage.getTimestamp()))
+        .keyBy(diagnosticsMessage -> diagnosticsMessage.getMetricHeader().getJobId().hashCode() % ASC_PARTITION_COUNT)
+        .process(new FlinkWindowableTask());
+
 
     env.execute("FlinkAutoScaler");
   }
-
 }
 

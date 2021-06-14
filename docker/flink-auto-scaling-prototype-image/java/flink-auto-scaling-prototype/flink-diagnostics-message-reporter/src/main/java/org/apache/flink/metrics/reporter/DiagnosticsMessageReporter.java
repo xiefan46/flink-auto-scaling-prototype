@@ -186,7 +186,7 @@ public class DiagnosticsMessageReporter implements MetricReporter, CharacterFilt
         if (kafkaProducer == null) {
           return;
         }
-        LOG.info("Report");
+        //LOG.debug("Report");
         long timestamp = System.currentTimeMillis();
         FlinkDiagnosticsMessage diagnosticsMessage = createDiagnosticsMessage();
         ProducerRecord<byte[], byte[]> record = new FlinkDiagnosticsMessageSerializationSchema(topic).serialize(diagnosticsMessage, timestamp);

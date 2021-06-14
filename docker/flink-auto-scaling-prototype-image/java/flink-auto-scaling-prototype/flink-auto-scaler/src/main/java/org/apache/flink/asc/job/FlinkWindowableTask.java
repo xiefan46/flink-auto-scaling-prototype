@@ -1,9 +1,11 @@
 package org.apache.flink.asc.job;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import com.linkedin.asc.action.ActionEnforcer;
 import com.linkedin.asc.action.ActionRegistry;
 import com.linkedin.asc.action.StoreBasedActionRegistry;
 import com.linkedin.asc.config.ASCConfig;
+import com.linkedin.asc.config.MapConfig;
 import com.linkedin.asc.datapipeline.DataPipeline;
 import com.linkedin.asc.datapipeline.dataprovider.ConfigDataProvider;
 import com.linkedin.asc.datapipeline.dataprovider.DiagnosticsStreamDataProvider;
@@ -27,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.ObjectUtils;
@@ -34,6 +37,7 @@ import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.asc.action.MockFlinkActionEnforcer;
 import org.apache.flink.asc.config.FlinkASCConfig;
 import org.apache.flink.asc.datapipeline.dataprovider.FlinkDiagnosticsStreamDataProvider;
@@ -49,42 +53,38 @@ import org.slf4j.LoggerFactory;
 
 
 public class FlinkWindowableTask
-    extends KeyedProcessFunction<String, FlinkDiagnosticsMessage, FlinkDiagnosticsMessage> {
+    extends KeyedProcessFunction<Integer, FlinkDiagnosticsMessage, FlinkDiagnosticsMessage> {
 
   private static final Logger LOG = LoggerFactory.getLogger(FlinkWindowableTask.class);
 
-  private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+  private transient ScheduledExecutorService scheduledExecutorService;
 
   // JobName blacklist on which no policy should be applied, regardless of the per-policy whitelisting.
-  private Pattern blacklistForAllPolicies;
+  private transient Pattern blacklistForAllPolicies;
 
   // Data for all jobs
-  private DataPipeline dataPipeline;
+  private transient DataPipeline dataPipeline;
 
   // ActionRegistry to take sizing actions
-  private ActionRegistry actionRegistry;
+  private transient ActionRegistry actionRegistry;
 
   // Priority list of policies
-  private List<Policy> policyList = new ArrayList<>();
+  private transient List<Policy> policyList;
 
-  private final FlinkASCConfig flinkASCConfig;
+  private transient FlinkASCConfig flinkASCConfig;
 
-  public FlinkWindowableTask(FlinkASCConfig flinkASCConfig) {
-    this.flinkASCConfig = flinkASCConfig;
+  public FlinkWindowableTask() {
   }
 
   @Override
   public void open(Configuration parameters) throws Exception {
-    /**
-     * Scheduled a thread to evaluate all the policies periodically
-     */
-    scheduledExecutorService.schedule(new Runnable() {
-      @Override
-      public void run() {
-        applyPolicies();
-      }
-    }, 1, TimeUnit.MINUTES);
-    //TODO: Figure out how to get ascConfig
+    policyList = new ArrayList<>();
+    // Init Flink ASC Configs
+    ParameterTool parameterTool = (ParameterTool)
+        getRuntimeContext().getExecutionConfig().getGlobalJobParameters();
+    this.flinkASCConfig = new FlinkASCConfig(new MapConfig(parameterTool.toMap()));
+    LOG.info("Load all flink asc configs: {}", flinkASCConfig);
+
     this.blacklistForAllPolicies = flinkASCConfig.getBlacklistForAllPolicies();
     this.dataPipeline = createDataPipeline(getRuntimeContext(), flinkASCConfig);
     this.actionRegistry = createActionRegistry(getRuntimeContext(), flinkASCConfig);
@@ -95,6 +95,26 @@ public class FlinkWindowableTask
   public void processElement(FlinkDiagnosticsMessage diagnosticsMessage, Context context,
       Collector<FlinkDiagnosticsMessage> collector) throws Exception {
     this.dataPipeline.processReceivedData(diagnosticsMessage);
+    /**
+     * Scheduled a thread to evaluate all the policies periodically
+     */
+    if(scheduledExecutorService == null) {
+
+      scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+
+      scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+        @Override
+        public void run() {
+          try{
+            applyPolicies();
+          }catch (Exception e){
+            System.out.println("Encountered an exception when applying policies" + e);
+            LOG.error("Encountered an exception when applying policies. {}", e);
+            throw new RuntimeException(e);
+          }
+        }
+      }, 0,30,  TimeUnit.SECONDS);
+    }
   }
 
   private void initializePolicies(ASCConfig ascConfig) {
@@ -104,6 +124,8 @@ public class FlinkWindowableTask
         ascConfig.getCPUScalingPolicyScaleUpMarginFraction(), ascConfig.getMetricWindowSizeForCPUScaleUp());
     CPUScaleDownPolicy cpuScaleDownPolicy = new CPUScaleDownPolicy(resizer, ascConfig.getCPUScalingPolicyScaleDownTriggerFactor(),
         ascConfig.getCPUScalingPolicyScaleDownMarginFraction(), ascConfig.getMetricWindowSizeForCPUScaleDown());
+    cpuScaleUpPolicy.initialize(ascConfig.getWhitelistForCPUScaleUpPolicy(), ascConfig.getMaxStaleness());
+    cpuScaleDownPolicy.initialize(ascConfig.getWhitelistForCPUScaleDownPolicy(), ascConfig.getMaxStaleness());
     policyList.add(cpuScaleUpPolicy);
     policyList.add(cpuScaleDownPolicy);
   }
@@ -174,10 +196,11 @@ public class FlinkWindowableTask
 
   private void applyPolicies() {
     Set<SizingAction> sizingActions = new HashSet<>();
-
+    LOG.info("Start apply policies");
     // iterate over jobs' latest attempts which do not have pending actions
-    for (JobKey job : this.dataPipeline.getLatestAttempts()) {
-
+    Set<JobKey> latestAttempts = this.dataPipeline.getLatestAttempts();
+    LOG.info("Latest attempts : {}", latestAttempts);
+    for (JobKey job : latestAttempts) {
       // check if job-name matches blacklist, if so, skip all policies on it
       if (blacklistForAllPolicies.matcher(job.getJobId()).matches()) {
         LOG.info("Skipping all policies over job: {}, because matches blacklist: {}", job, blacklistForAllPolicies);
@@ -196,11 +219,17 @@ public class FlinkWindowableTask
           if (action.isPresent()) {
             sizingActions.add(action.get());
             LOG.info("Policy: {} yielded sizing actions: {}", policy.getClass().getCanonicalName(), action);
+
             break;
           }
         }
       }
     }
+
+    // register actions suggested by policies with the registry (which will send them to enforcers)
+    sizingActions.forEach(action -> this.actionRegistry.registerAction(action));
+
   }
+
 }
 

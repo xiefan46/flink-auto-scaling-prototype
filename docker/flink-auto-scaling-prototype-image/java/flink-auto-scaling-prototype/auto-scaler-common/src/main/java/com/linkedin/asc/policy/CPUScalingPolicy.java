@@ -41,7 +41,7 @@ public abstract class CPUScalingPolicy extends Policy {
     this.resizer = resizer;
   }
 
-  private static final Duration INITIALIZATION_PERIOD = Duration.ofMinutes(5);
+  private static final Duration INITIALIZATION_PERIOD = Duration.ofSeconds(30);
 
   @Override
   public void initialize(Pattern jobNameWhitelist, Duration maxStaleness) {

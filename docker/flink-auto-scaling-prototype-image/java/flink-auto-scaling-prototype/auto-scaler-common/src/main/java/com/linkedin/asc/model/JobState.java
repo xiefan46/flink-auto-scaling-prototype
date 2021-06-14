@@ -8,7 +8,7 @@ import lombok.ToString;
 /**
  * Encapsulates properties concerning the runtime state of a job.
  */
-@ToString
+@ToString(callSuper=true)
 @EqualsAndHashCode
 public class JobState extends TimestampInfo {
 

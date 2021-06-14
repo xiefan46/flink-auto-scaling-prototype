@@ -60,35 +60,8 @@ public class StoreBasedActionRegistry implements ActionRegistry {
     this.executorService = Executors.newSingleThreadExecutor(
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat(threadNamePrefix + "-Action-Registry").build());
     this.executorService.submit(new ApplyActionsRunnable());
-    this.initializeMetricValues();
   }
 
-  /**
-   * Initialize metric values using the contents of the store.
-   */
-  private void initializeMetricValues() {
-    synchronized (pendingActionsStore) {
-
-      // iterate on the pendingActionsStore and populate actionsToIssue
-      KeyValueIterator<String, List<SizingAction>> iterator = pendingActionsStore.all();
-      while (iterator.hasNext()) {
-        Entry<String, List<SizingAction>> actionList = iterator.next();
-        long sizingActionsEnqueuedCount = actionList.getValue()
-            .stream()
-            .filter(action -> action.getStatus().equals(SizingAction.Status.ENQUEUED))
-            .count();
-        long sizingActionsIssuedCount = actionList.getValue()
-            .stream()
-            .filter(action -> action.getStatus().equals(SizingAction.Status.ISSUED))
-            .count();
-        LOG.info("Initializing metric job: {}, sizingActionsIssuedCount: {}", actionList.getKey(),
-            sizingActionsIssuedCount);
-        LOG.info("Initializing metric job: {}, sizingActionsEnqueuedCount: {}", actionList.getKey(),
-            sizingActionsEnqueuedCount);
-      }
-      iterator.close();
-    }
-  }
 
   @Override
   public boolean hasAction(JobKey jobKey) {

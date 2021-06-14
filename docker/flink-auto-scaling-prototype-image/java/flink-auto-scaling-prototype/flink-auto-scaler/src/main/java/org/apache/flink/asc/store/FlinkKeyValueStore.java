@@ -3,10 +3,13 @@ package org.apache.flink.asc.store;
 import com.linkedin.asc.store.Entry;
 import com.linkedin.asc.store.KeyValueIterator;
 import com.linkedin.asc.store.KeyValueStore;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.flink.api.common.state.MapState;
 import org.apache.flink.asc.exception.FlinkASCException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -15,6 +18,8 @@ import org.apache.flink.asc.exception.FlinkASCException;
 public class FlinkKeyValueStore<K, V> implements KeyValueStore<K, V> {
 
   private final MapState<K, V> flinkMapState;
+
+  private static final Logger LOG = LoggerFactory.getLogger(FlinkKeyValueStore.class);
 
   public FlinkKeyValueStore(MapState<K, V> flinkMapState) {
     this.flinkMapState = flinkMapState;
@@ -56,7 +61,35 @@ public class FlinkKeyValueStore<K, V> implements KeyValueStore<K, V> {
 
   @Override
   public KeyValueIterator<K, V> all() {
-    return null;
+    try {
+      Iterator<Map.Entry<K, V>> iterator = flinkMapState.iterator();
+      return new KeyValueIterator<K, V>() {
+        @Override
+        public void close() {
+          //not applicable
+        }
+
+        @Override
+        public boolean hasNext() {
+          return iterator.hasNext();
+        }
+
+        @Override
+        public Entry<K, V> next() {
+          Map.Entry<K, V> kv = iterator.next();
+          return new Entry<K, V>(kv.getKey(), kv.getValue());
+        }
+
+        @Override
+        public void remove() {
+          iterator.remove();
+        }
+
+      };
+    } catch (Exception e) {
+      System.out.println(e.getStackTrace());
+      throw new FlinkASCException(e.getCause());
+    }
   }
 
   @Override

@@ -3,12 +3,14 @@ package org.apache.flink.diagnostics.model;
 import com.linkedin.asc.model.MetricsSnapshot;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.ToString;
 import org.apache.flink.metrics.Counter;
 import org.apache.flink.metrics.Gauge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+@ToString(callSuper=true)
 public class FlinkMetricsSnapshot extends MetricsSnapshot {
 
   private static final Logger LOG = LoggerFactory.getLogger(FlinkMetricsSnapshot.class);

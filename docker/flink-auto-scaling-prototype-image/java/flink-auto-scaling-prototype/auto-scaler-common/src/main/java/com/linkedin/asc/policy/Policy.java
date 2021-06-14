@@ -59,6 +59,8 @@ public abstract class Policy {
    */
   private boolean shouldApplyPolicy(JobKey jobKey, DataPipeline dataPipeline) {
     if (jobNameWhitelist.matcher(jobKey.getJobId()).matches()) {
+      LOG.info("Job : {} is in the whitelist. Should apply policy", jobKey);
+      LOG.info("Current job state : {}", dataPipeline.getCurrentJobState(jobKey));
       Instant jobLastKnownTimestamp = Instant.ofEpochMilli(dataPipeline.getCurrentJobState(jobKey).getLastTime());
       Duration staleness = Duration.between(jobLastKnownTimestamp, Instant.now());
       LOG.info("Job: {}, staleness: {}, maxStaleness: {}", jobKey, staleness, maxStaleness);
@@ -66,4 +68,7 @@ public abstract class Policy {
     }
     return false;
   }
+
+
+
 }

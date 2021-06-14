@@ -186,6 +186,9 @@ public class TestFlinkDiagnosticsStreamDataProvider {
           MaxFunc.MAX_FUNC);
       DiagnosticsMessage diagnosticsMessage = createFlinkTaskManagerDiagnosticsMessage(JOB_NAME, ATTEMPT_ID, TM_ID,
           true, randProcessCPUUsage, time);
+      //Metrics from job manager should not be used
+      DiagnosticsMessage jobManagerDiagnosticsMessage = createFlinkJobManagerDiagnosticsMessage(JOB_NAME, ATTEMPT_ID, TM_ID,
+          true, randProcessCPUUsage, time);
       diagnosticsStreamDataProvider.receiveData(diagnosticsMessage, dataPipeline);
     }
     Map<JobKey, JobState> jobStates = diagnosticsStreamDataProvider.getAllJobsState();
@@ -212,6 +215,14 @@ public class TestFlinkDiagnosticsStreamDataProvider {
     return flinkDiagnosticsMessage;
   }
 
+  private FlinkDiagnosticsMessage createFlinkJobManagerDiagnosticsMessage(String jobName, String attemptId, String containerName,
+      boolean autoScalingEnableddouble, double cpuUsageRate, long timestamp) {
+    FlinkMetricsHeader flinkMetricsHeader = getMockFlinkMetricsHeader(jobName, attemptId, containerName);
+    FlinkMetricsSnapshot flinkMetricsSnapshot = getJobmanagerMetricsSnapshot(cpuUsageRate);
+    FlinkDiagnosticsMessage flinkDiagnosticsMessage = new FlinkDiagnosticsMessage(flinkMetricsHeader, flinkMetricsSnapshot, autoScalingEnableddouble, timestamp);
+    return flinkDiagnosticsMessage;
+  }
+
   private FlinkMetricsHeader getMockFlinkMetricsHeader(String jobName, String attemptId, String containerName) {
     FlinkMetricsHeader flinkMetricsHeader = new FlinkMetricsHeader();
     flinkMetricsHeader.put("<job_name>", jobName);
@@ -232,7 +243,16 @@ public class TestFlinkDiagnosticsStreamDataProvider {
    */
   private FlinkMetricsSnapshot getTaskmanagerMetricsSnapshot(double cpuUsageRate) {
     Map<String, Object> metricsGroup = new HashMap<>();
-    String[] groupNames = new String[] {"taskmanager", "Status", "CPU"};
+    String[] groupNames = new String[] {"taskmanager", "Status", "JVM", "CPU" };
+    Map<String, Object> cpuMetricsGroup = FlinkMetricsSnapshot.visitMetricGroupMap(metricsGroup, groupNames, true);
+    cpuMetricsGroup.put("Load", (Gauge<Double>) () -> cpuUsageRate);
+    cpuMetricsGroup.put("Time", (Gauge<Double>) () -> -1.0);
+    return FlinkMetricsSnapshot.convertToMetricsSnapshot(metricsGroup);
+  }
+
+  private FlinkMetricsSnapshot getJobmanagerMetricsSnapshot(double cpuUsageRate) {
+    Map<String, Object> metricsGroup = new HashMap<>();
+    String[] groupNames = new String[] {"jobmanager", "Status", "JVM", "CPU" };
     Map<String, Object> cpuMetricsGroup = FlinkMetricsSnapshot.visitMetricGroupMap(metricsGroup, groupNames, true);
     cpuMetricsGroup.put("Load", (Gauge<Double>) () -> cpuUsageRate);
     cpuMetricsGroup.put("Time", (Gauge<Double>) () -> -1.0);

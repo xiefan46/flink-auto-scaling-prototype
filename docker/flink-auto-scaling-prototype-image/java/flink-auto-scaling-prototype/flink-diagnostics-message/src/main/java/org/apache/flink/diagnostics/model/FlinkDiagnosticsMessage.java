@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 
-@ToString
+@ToString(callSuper=true)
 @EqualsAndHashCode
 public class FlinkDiagnosticsMessage extends DiagnosticsMessage {
 
