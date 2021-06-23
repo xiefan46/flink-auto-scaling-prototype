@@ -36,9 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamDataProvider {
 
-  private final static Logger LOG = LoggerFactory.getLogger(
-      DiagnosticsStreamDataProvider.class.getName());
-
+  private final static Logger LOG = LoggerFactory.getLogger(DiagnosticsStreamDataProvider.class.getName());
 
   protected final static int MAX_ATTEMPIDS_PER_JOB_TO_STORE = 100;
 
@@ -72,10 +70,11 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
   }
 
   @Override
-  public void receiveData(DiagnosticsMessage diagnosticsMessage, DataPipeline dataPipeline) {
+  public synchronized void receiveData(DiagnosticsMessage diagnosticsMessage, DataPipeline dataPipeline) {
     //LOG.info("Receive data : {}", diagnosticsMessage);
-    if(diagnosticsMessage != null) {
-      boolean storeUpdated = this.updateJobStateAndAttemptStores(diagnosticsMessage, dataPipeline, diagnosticsMessage.getTimestamp());
+    if (diagnosticsMessage != null) {
+      boolean storeUpdated =
+          this.updateJobStateAndAttemptStores(diagnosticsMessage, dataPipeline, diagnosticsMessage.getTimestamp());
       // if any jobState or attempt store was updated, only then we update the diagnostics/error stores, and cleanupIf reqd
       if (storeUpdated) {
         this.updateMetricWindowStores(diagnosticsMessage, diagnosticsMessage.getTimestamp());
@@ -89,57 +88,48 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
    * @return
    */
   @Override
-  public Set<JobKey> getLatestAttempts() {
-    synchronized (jobAttemptsStore){
+  public synchronized Set<JobKey> getLatestAttempts() {
       Set<JobKey> latestJobAttempts = new HashSet<>();
       KeyValueIterator<String, LinkedList<String>> jobsIterator = this.jobAttemptsStore.all();
       while (jobsIterator.hasNext()) {
         Entry<String, LinkedList<String>> entry = jobsIterator.next();
         String jobId = entry.getKey();
         String latestAttemptID = entry.getValue().getLast();
-        latestJobAttempts.add(
-            new JobKey(jobId, latestAttemptID));
+        latestJobAttempts.add(new JobKey(jobId, latestAttemptID));
       }
       jobsIterator.close();
       return latestJobAttempts;
-    }
   }
 
   @Override
-  public TimeWindow getProcessVcoreUsageMetricWindow(JobKey job) {
-    synchronized (processVcoreUsageMetricStore){
-      return this.processVcoreUsageMetricStore.get(job);
-    }
+  public synchronized TimeWindow getProcessVcoreUsageMetricWindow(JobKey job) {
+    return this.processVcoreUsageMetricStore.get(job);
   }
 
   /**
    * Get the recorded {@link JobState} for all jobs, instances, attempts.
    */
-  public Map<JobKey, JobState> getAllJobsState() {
-    synchronized (jobStateStore) {
-      Map<JobKey, JobState> jobsMap = new HashMap<>();
-      KeyValueIterator<JobKey, JobState> jobsIterator = this.jobStateStore.all();
-      jobsIterator.forEachRemaining(entry -> jobsMap.put(entry.getKey(), entry.getValue()));
-      jobsIterator.close();
-      return jobsMap;
-    }
+  public synchronized Map<JobKey, JobState> getAllJobsState() {
+    Map<JobKey, JobState> jobsMap = new HashMap<>();
+    KeyValueIterator<JobKey, JobState> jobsIterator = this.jobStateStore.all();
+    jobsIterator.forEachRemaining(entry -> jobsMap.put(entry.getKey(), entry.getValue()));
+    jobsIterator.close();
+    return jobsMap;
   }
 
   /**
    * Return the job state for the given job.
    */
-  public JobState getJobState(JobKey jobKey) {
-    synchronized (jobStateStore) {
-      return this.jobStateStore.get(jobKey);
-    }
+  public synchronized JobState getJobState(JobKey jobKey) {
+    return this.jobStateStore.get(jobKey);
   }
-
 
   /**
    * jobAttemptsStore appropriately.
    * @return true if any store is updated, false otherwise
    */
-  private synchronized boolean updateJobStateAndAttemptStores(DiagnosticsMessage diagnosticsMessage, DataPipeline dataPipeline, long eventTime) {
+  private boolean updateJobStateAndAttemptStores(DiagnosticsMessage diagnosticsMessage,
+      DataPipeline dataPipeline, long eventTime) {
     MetricHeader metricHeader = diagnosticsMessage.getMetricHeader();
     MetricsSnapshot metricsSnapshot = diagnosticsMessage.getMetricsSnapshot();
     String jobID = metricHeader.getJobId();
@@ -216,7 +206,8 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
   private JobSize getJobSize(Config jobConfig) {
     int containerMemoryMB = jobConfig.getInt(ConfigConstants.JOB_AUTO_SCALING_CONTAINER_MEMORY_MB_KEY);
     int containerCount = jobConfig.getInt(ConfigConstants.JOB_AUTO_SCALING_CONTAINER_COUNT_KEY);
-    int numVcoresPerContainer = jobConfig.getInt(ConfigConstants.JOB_AUTO_SCALING_CONTAINER_NUM_CORES_PER_CONTAINER_KEY);
+    int numVcoresPerContainer =
+        jobConfig.getInt(ConfigConstants.JOB_AUTO_SCALING_CONTAINER_NUM_CORES_PER_CONTAINER_KEY);
     JobSize jobSize = new JobSize(containerMemoryMB, numVcoresPerContainer, containerCount);
     return jobSize;
   }
@@ -252,10 +243,8 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
     deleteFromAllStores(jobID, attemptIDsToDelete);
   }
 
-
-
   // Delete give jobID and attemptIDs from all stores
-  private synchronized void  deleteFromAllStores(String jobId, List<String> attemptIDsToDelete) {
+  private void deleteFromAllStores(String jobId, List<String> attemptIDsToDelete) {
 
     // if the list is empty we skip the store-get
     if (attemptIDsToDelete == null || attemptIDsToDelete.isEmpty()) {
@@ -295,7 +284,7 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
    */
   private void updateMetricWindowStores(DiagnosticsMessage diagnosticsMessage, long eventTime) {
 
-    if(!isTaskManagerDiagnosticsMessage(diagnosticsMessage)){
+    if (!isTaskManagerDiagnosticsMessage(diagnosticsMessage)) {
       return;
     }
 
@@ -315,12 +304,12 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
     }
   }
 
-
   private double extractProcessVcoreUsage(DiagnosticsMessage diagnosticsMessage) {
     MetricsSnapshot metricsSnapshot = diagnosticsMessage.getMetricsSnapshot();
-    Map<String, Object> cpuMetricGroup = FlinkMetricsSnapshot.visitMetricGroupMap(metricsSnapshot,
-        new String[]{"taskmanager", "Status", "JVM", "CPU"}, false);
-    if(cpuMetricGroup == null) {
+    Map<String, Object> cpuMetricGroup =
+        FlinkMetricsSnapshot.visitMetricGroupMap(metricsSnapshot, new String[]{"taskmanager", "Status", "JVM", "CPU"},
+            false);
+    if (cpuMetricGroup == null) {
       LOG.error("Can't find cpuMetricGroup in diagnosticsMessage. DiagnosticsMessage : {}", diagnosticsMessage);
       return 0;
     }
@@ -330,9 +319,9 @@ public class FlinkDiagnosticsStreamDataProvider implements DiagnosticsStreamData
 
   private boolean isTaskManagerDiagnosticsMessage(DiagnosticsMessage diagnosticsMessage) {
     MetricsSnapshot metricsSnapshot = diagnosticsMessage.getMetricsSnapshot();
-    if(metricsSnapshot.containsKey(TASK_MANAGER_METRIC_GROUP_KEY)){
+    if (metricsSnapshot.containsKey(TASK_MANAGER_METRIC_GROUP_KEY)) {
       return true;
-    }else{
+    } else {
       return false;
     }
   }

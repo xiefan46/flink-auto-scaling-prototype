@@ -16,7 +16,7 @@
 # limitations under the License.
 ################################################################################
 
-version: "2.1"
+version: "2"
 services:
   client-count-job-client:
     build: ./docker/flink-auto-scaling-prototype-image
