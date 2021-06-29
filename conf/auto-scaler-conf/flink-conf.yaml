@@ -24,8 +24,9 @@ query.server.port: 6125
 taskmanager.memory.process.size: 1728Mb
 taskmanager.numberOfTaskSlots: 1
 
-state.backend: hashmap
-state.checkpoint-storage: jobmanager
+#state.backend: hashmap
+#state.checkpoint-storage: jobmanager
+#state.backend: filesystem
 #state.checkpoints.dir: file:///tmp/flink-checkpoints-directory
 #state.savepoints.dir: file:///tmp/flink-savepoints-directory
 

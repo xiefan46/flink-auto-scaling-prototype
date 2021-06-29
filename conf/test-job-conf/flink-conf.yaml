@@ -24,11 +24,11 @@ query.server.port: 6125
 taskmanager.memory.process.size: 1728Mb
 taskmanager.numberOfTaskSlots: 1
 
-#state.backend: filesystem
-#state.checkpoints.dir: file:///tmp/flink-checkpoints-directory
-#state.savepoints.dir: file:///tmp/flink-savepoints-directory
-state.backend: hashmap
-state.checkpoint-storage: jobmanager
+state.backend: filesystem
+state.checkpoints.dir: file:///tmp/flink-checkpoints-directory
+state.savepoints.dir: file:///tmp/flink-savepoints-directory
+#state.backend: hashmap
+#state.checkpoint-storage: jobmanager
 
 heartbeat.interval: 1000
 heartbeat.timeout: 5000
@@ -44,3 +44,4 @@ metrics.reporter.diagnostics-message-reporter.interval: 1 SECONDS
 # Filter all the task info and operator level info since currently we only do taskmanager level auto-scaling.
 # If we want to do operator level scaling, we can change this.
 metrics.reporter.diagnostics-message-reporter.scope.variables.excludes: task_id;task_name;task_attempt_id;task_attempt_num;subtask_index;operator_id;operator_name;subtask_index
+jobmanager.rpc.address: jobmanager

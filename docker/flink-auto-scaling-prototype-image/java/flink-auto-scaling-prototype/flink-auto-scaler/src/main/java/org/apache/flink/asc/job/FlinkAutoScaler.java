@@ -24,7 +24,7 @@ import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.diagnostics.model.FlinkDiagnosticsMessage;
 import org.apache.flink.diagnostics.model.serde.FlinkDiagnosticsMessageDeserializationSchema;
-import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
+import org.apache.flink.runtime.state.memory.MemoryStateBackend;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -57,6 +57,7 @@ public class FlinkAutoScaler {
     final ParameterTool parameterTool = ParameterTool.fromPropertiesFile(ASC_CONFIG_FILE_PATH);
     final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     env.getConfig().setGlobalJobParameters(parameterTool);
+    env.setStateBackend(new MemoryStateBackend(100 * 1024 * 1024, false));
 
     //debug
     String currentPath = new java.io.File(".").getCanonicalPath();
