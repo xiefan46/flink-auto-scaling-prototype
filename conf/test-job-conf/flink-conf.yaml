@@ -36,7 +36,7 @@ heartbeat.timeout: 5000
 #DiagnosticsMessageReporter configs
 metrics.reporters: diagnostics-message-reporter
 metrics.reporter.diagnostics-message-reporter.factory.class: org.apache.flink.metrics.reporter.DiagnosticsMessageReporterFactory
-metrics.reporter.diagnostics-message-reporter.bootstrap.servers: kafka:9092
+metrics.reporter.diagnostics-message-reporter.bootstrap.servers: kafka-service:9092
 metrics.reporter.diagnostics-message-reporter.topic: flink-metrics
 metrics.reporter.diagnostics-message-reporter.keyBy: task_attempt_id
 metrics.reporter.diagnostics-message-reporter.interval: 1 SECONDS

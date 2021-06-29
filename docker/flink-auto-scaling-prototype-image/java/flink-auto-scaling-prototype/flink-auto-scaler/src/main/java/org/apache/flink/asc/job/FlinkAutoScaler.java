@@ -42,7 +42,7 @@ public class FlinkAutoScaler {
 
   private static final String INPUT_TOPIC_NAME = "flink-metrics";
 
-  private static final String KAFKA_BROKERS = "kafka:9092";
+  private static final String KAFKA_BROKERS = "kafka-service:9092";
 
   private static final String ASC_CONFIG_FILE_PATH = "/opt/flink/conf/flink-asc-config.properties";
 

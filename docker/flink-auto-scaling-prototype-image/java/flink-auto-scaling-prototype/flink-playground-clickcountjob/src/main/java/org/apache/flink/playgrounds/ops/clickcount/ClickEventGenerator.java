@@ -60,19 +60,22 @@ public class ClickEventGenerator {
 		final ParameterTool params = ParameterTool.fromArgs(args);
 
 		String topic = params.get("topic", "input");
+		String brokers = params.get("bootstrap.servers");
 
 		Properties kafkaProps = createKafkaProperties(params);
 
 		KafkaProducer<byte[], byte[]> producer = new KafkaProducer<>(kafkaProps);
 
 		ClickIterator clickIterator = new ClickIterator();
+		System.out.println("Producing events to broker : " + brokers);
+		System.out.println("Producing events to topic : " + topic);
 
 		while (true) {
 
 			ProducerRecord<byte[], byte[]> record = new ClickEventSerializationSchema(topic).serialize(
 					clickIterator.next(),
 					null);
-
+			System.out.println("Generate event");
 			producer.send(record);
 			Thread.sleep(DELAY);
 		}

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clickevent-generator-deployment
+  labels:
+    app: clickevent-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickevent-generator
+  template:
+    metadata:
+      labels:
+        app: clickevent-generator
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+        - name: clickevent-generator
+          image: xiefan46/flink-auto-scaling-prototype-image:latest
+          command: ["java"]
+          args: ["-classpath", "/opt/ClickCountJob.jar:/opt/flink/lib/*", "org.apache.flink.playgrounds.ops.clickcount.ClickEventGenerator", "--bootstrap.servers", "kafka-service:9092","--topic","input"]

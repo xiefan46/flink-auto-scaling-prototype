@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: click-count-job-deployment
+  labels:
+    app: click-count-job
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: click-count-job
+  template:
+    metadata:
+      labels:
+        app: click-count-job
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+        - name: click-count-job
+          image: xiefan46/flink-auto-scaling-prototype-image:latest
+          command: ["flink"]
+          args: ["run","-p","1","/opt/ClickCountJob.jar", "--bootstrap.servers","kafka-service:9092","--checkpointing","--event-time"]
