@@ -20,4 +20,4 @@ spec:
         - name: clickevent-generator
           image: xiefan46/flink-auto-scaling-prototype-image:latest
           command: ["java"]
-          args: ["-classpath", "/opt/ClickCountJob.jar:/opt/flink/lib/*", "org.apache.flink.playgrounds.ops.clickcount.ClickEventGenerator", "--bootstrap.servers", "kafka-service:9092","--topic","input"]
+          args: ["-classpath", "/opt/ClickCountJob.jar:/opt/flink/lib/*", "org.apache.flink.playgrounds.ops.clickcount.ClickEventGenerator", "--bootstrap.servers", "kafka-service:9092"]

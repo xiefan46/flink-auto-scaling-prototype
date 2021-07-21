@@ -22,6 +22,8 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventSerializationSchema;
 
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -75,6 +77,9 @@ public class ClickEventGenerator {
 			ProducerRecord<byte[], byte[]> record = new ClickEventSerializationSchema(topic).serialize(
 					clickIterator.next(),
 					null);
+
+
+
 			System.out.println("Generate event");
 			producer.send(record);
 			Thread.sleep(DELAY);
@@ -85,6 +90,7 @@ public class ClickEventGenerator {
 		String brokers = params.get("bootstrap.servers", "localhost:9092");
 		Properties kafkaProps = new Properties();
 		kafkaProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
+		kafkaProps.put("broker-list", brokers);
 		kafkaProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getCanonicalName());
 		kafkaProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getCanonicalName());
 		return kafkaProps;

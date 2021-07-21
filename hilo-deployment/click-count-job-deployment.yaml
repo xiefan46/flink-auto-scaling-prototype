@@ -21,3 +21,6 @@ spec:
           image: xiefan46/flink-auto-scaling-prototype-image:latest
           command: ["flink"]
           args: ["run","-p","1","/opt/ClickCountJob.jar", "--bootstrap.servers","kafka-service:9092","--checkpointing","--event-time"]
+          env:
+            - name: JOB_MANAGER_RPC_ADDRESS
+              value: flink-test-job-jobmanager-service

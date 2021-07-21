@@ -34,14 +34,13 @@ heartbeat.interval: 1000
 heartbeat.timeout: 5000
 
 #DiagnosticsMessageReporter configs
-metrics.reporters: diagnostics-message-reporter
-metrics.reporter.diagnostics-message-reporter.factory.class: org.apache.flink.metrics.reporter.DiagnosticsMessageReporterFactory
-metrics.reporter.diagnostics-message-reporter.bootstrap.servers: kafka-service:9092
-metrics.reporter.diagnostics-message-reporter.topic: flink-metrics
-metrics.reporter.diagnostics-message-reporter.keyBy: task_attempt_id
-metrics.reporter.diagnostics-message-reporter.interval: 1 SECONDS
+#metrics.reporters: diagnostics-message-reporter
+#metrics.reporter.diagnostics-message-reporter.factory.class: org.apache.flink.metrics.reporter.DiagnosticsMessageReporterFactory
+#metrics.reporter.diagnostics-message-reporter.bootstrap.servers: kafka-service:9092
+#metrics.reporter.diagnostics-message-reporter.topic: flink-metrics
+#metrics.reporter.diagnostics-message-reporter.keyBy: task_attempt_id
+#metrics.reporter.diagnostics-message-reporter.interval: 1 SECONDS
 
 # Filter all the task info and operator level info since currently we only do taskmanager level auto-scaling.
 # If we want to do operator level scaling, we can change this.
-metrics.reporter.diagnostics-message-reporter.scope.variables.excludes: task_id;task_name;task_attempt_id;task_attempt_num;subtask_index;operator_id;operator_name;subtask_index
-jobmanager.rpc.address: jobmanager
+#metrics.reporter.diagnostics-message-reporter.scope.variables.excludes: task_id;task_name;task_attempt_id;task_attempt_num;subtask_index;operator_id;operator_name;subtask_index
