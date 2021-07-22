@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flink-test-job-taskmanager
+  name: flink-test-job-taskmanager-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: flink-test-job
@@ -25,12 +25,12 @@ spec:
             value: flink-test-job-jobmanager-service
         # To use HPA it looks like we need to specify resource limits
         resources:
-          # limits:
-          #   cpu: 500m
-          #   memory: "538Mi"
+          limits:
+            cpu: 4
+            memory: "4096Mi"
           requests:
-            cpu: 200m
-            memory: "1024Mi"
+            cpu: 1
+            memory: "2048Mi"
         ports:
         - containerPort: 6122
           name: rpc

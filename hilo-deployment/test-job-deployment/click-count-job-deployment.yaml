@@ -19,8 +19,24 @@ spec:
       containers:
         - name: click-count-job
           image: xiefan46/flink-auto-scaling-prototype-image:latest
+          #command: [ "/bin/bash", "-c", "--" ]
+          #args: [ "while true; do sleep 30; done;" ]
           command: ["flink"]
           args: ["run","-p","1","/opt/ClickCountJob.jar", "--bootstrap.servers","kafka-service:9092","--checkpointing","--event-time"]
           env:
             - name: JOB_MANAGER_RPC_ADDRESS
               value: flink-test-job-jobmanager-service
+          volumeMounts:
+            - name: flink-config-volume
+              mountPath: /opt/flink/conf/
+      volumes:
+        - name: flink-config-volume
+          configMap:
+            name: test-job-config
+            items:
+              - key: flink-conf.yaml
+                path: flink-conf.yaml
+              - key: log4j-console.properties
+                path: log4j-console.properties
+              - key: log4j-cli.properties
+                path: log4j-cli.properties

@@ -13,7 +13,9 @@ kubectl apply -f ./test-job-deployment/test-job-jobmanager-deployment-service.ya
 kubectl apply -f ./test-job-deployment/taskmanager-session-deployment.yaml
 
 #deploys a service to generate test data to kafka
-kubectl apply -f clickevent-generator-deployment.yaml
+kubectl apply -f ./test-job-deployment/clickevent-generator-deployment.yaml
 
 #creates a client and submits the click-count-job to jobmanager
-#kubectl apply -f click-count-job-deployment.yaml
+kubectl apply -f ./test-job-deployment/click-count-job-deployment.yaml
+
+#kubectl port-forward deployment/flink-test-job-jobmanager-deployment 8081:8081

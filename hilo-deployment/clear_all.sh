@@ -1,8 +1,9 @@
 #!/bin/bash
 
 #delete the flink test job
-kubectl delete deployment flink-test-job-taskmanager
-kubectl delete deployment flink-test-job-jobmanager
+kubectl delete deployment click-count-job-deployment
+kubectl delete deployment flink-test-job-taskmanager-deployment
+kubectl delete deployment flink-test-job-jobmanager-deployment
 kubectl delete service flink-test-job-jobmanager-service
 kubectl delete deployment click-count-job-deployment
 kubectl delete deployment clickevent-generator-deployment
