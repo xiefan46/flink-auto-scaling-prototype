@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: flink-auto-scaler-client
+spec:
+  containers:
+    - name: flink-auto-scaler-client
+      image: xiefan46/flink-auto-scaling-prototype-image:latest
+      command: ["flink"]
+      args: ["run","-p","1","-d", "/opt/FlinkAutoScaler.jar"]
+      env:
+        - name: JOB_MANAGER_RPC_ADDRESS
+          value: auto-scaler-jobmanager-service
+      volumeMounts:
+        - name: flink-config-volume
+          mountPath: /opt/flink/conf/
+  restartPolicy: Never
+  volumes:
+    - name: flink-config-volume
+      configMap:
+        name: auto-scaler-config
+        items:
+          - key: flink-conf.yaml
+            path: flink-conf.yaml
+          - key: log4j-console.properties
+            path: log4j-console.properties
+          - key: log4j-cli.properties
+            path: log4j-cli.properties
+          - key: flink-asc-config.properties
+            path: flink-asc-config.properties

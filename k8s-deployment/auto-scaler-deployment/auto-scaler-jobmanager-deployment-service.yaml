@@ -1,53 +1,56 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flink-test-job-taskmanager-deployment
+  name: auto-scaler-jobmanager-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: flink-test-job
-      component: taskmanager
+      app: flink-auto-scaler
+      component: jobmanager
   template:
     metadata:
       labels:
-        app: flink-test-job
-        component: taskmanager
+        app: flink-auto-scaler
+        component: jobmanager
     spec:
       containers:
-      - name: taskmanager
+      - name: jobmanager
         image: xiefan46/flink-auto-scaling-prototype-image:latest
         imagePullPolicy: Always
-        command: ["taskmanager.sh"]
+        command: ["jobmanager.sh"]
         args: ["start-foreground"]
-        env:
-          - name: JOB_MANAGER_RPC_ADDRESS
-            value: flink-test-job-jobmanager-service
-        # To use HPA it looks like we need to specify resource limits
         resources:
           limits:
-            cpu: 4
-            memory: "4096Mi"
-          requests:
             cpu: 1
+            memory: "3072Mi"
+          requests:
+            cpu: 0.5
             memory: "2048Mi"
+        env:
+          - name: JOB_MANAGER_RPC_ADDRESS
+            value: auto-scaler-jobmanager-service
         ports:
-        - containerPort: 6122
+        - containerPort: 6123
           name: rpc
+        - containerPort: 6124
+          name: blob-server
+        - containerPort: 8081
+          name: webui
         livenessProbe:
           tcpSocket:
-            port: 6122
+            port: 6123
           initialDelaySeconds: 30
           periodSeconds: 60
         volumeMounts:
         - name: flink-config-volume
-          mountPath: /opt/flink/conf/
+          mountPath: /opt/flink/conf
         securityContext:
           runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
       volumes:
       - name: flink-config-volume
         configMap:
-          name: test-job-config
+          name: auto-scaler-config
           items:
           - key: flink-conf.yaml
             path: flink-conf.yaml
@@ -55,3 +58,24 @@ spec:
             path: log4j-console.properties
           - key: log4j-cli.properties
             path: log4j-cli.properties
+          - key: flink-asc-config.properties
+            path: flink-asc-config.properties
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auto-scaler-jobmanager-service
+spec:
+  type: LoadBalancer
+  ports:
+    - name: rpc
+      port: 6123
+    - name: blob-server
+      port: 6124
+    - name: webui
+      port: 8081
+  selector:
+    app: flink-auto-scaler
+    component: jobmanager

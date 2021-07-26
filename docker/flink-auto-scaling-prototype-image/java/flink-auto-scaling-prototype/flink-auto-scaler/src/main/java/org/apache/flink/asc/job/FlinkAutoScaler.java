@@ -72,9 +72,12 @@ public class FlinkAutoScaler {
         new FlinkKafkaConsumer<FlinkDiagnosticsMessage>(INPUT_TOPIC_NAME,
             new FlinkDiagnosticsMessageDeserializationSchema(), kafkaProps)).name("Flink Metrics Source");
 
+
+
     source.assignTimestampsAndWatermarks(WatermarkStrategy.<FlinkDiagnosticsMessage>forBoundedOutOfOrderness(
         Duration.ofMinutes(10)).withTimestampAssigner(
         (diagnosticsMessage, timestamp) -> diagnosticsMessage.getTimestamp()))
+        .filter(diagnosticsMessage -> (diagnosticsMessage.getMetricHeader() != null && diagnosticsMessage.getMetricHeader().getJobId() != null))
         .keyBy(diagnosticsMessage -> diagnosticsMessage.getMetricHeader().getJobId().hashCode() % ASC_PARTITION_COUNT)
         .process(new FlinkWindowableTask());
 

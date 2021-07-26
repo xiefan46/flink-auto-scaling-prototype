@@ -17,7 +17,7 @@
 ################################################################################
 
 jobmanager.memory.process.size: 1600Mb
-jobmanager.rpc.address: jobmanager
+jobmanager.rpc.address: auto-scaler-jobmanager-service
 blob.server.port: 6124
 query.server.port: 6125
 
